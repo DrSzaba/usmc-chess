@@ -79,28 +79,28 @@ try{
  atlas.colorSpace=THREE.SRGBColorSpace;
  const hitCanvas=document.createElement('canvas');hitCanvas.width=atlas.image.width;hitCanvas.height=atlas.image.height;
  const hitContext=hitCanvas.getContext('2d',{willReadFrequently:true});hitContext.drawImage(atlas.image,0,0);
- function visibleHit(hit){
+function visibleHit(hit){
   if(!hit.object.userData.square)return false;
-  if(!hit.object.isSprite)return true;
+  if(!hit.object.userData.figure)return true;
   const map=hit.object.material.map;map.updateMatrix();const uv=map.transformUv(hit.uv.clone());
   const pixel=hitContext.getImageData(Math.min(hitCanvas.width-1,Math.max(0,Math.floor(uv.x*hitCanvas.width))),Math.min(hitCanvas.height-1,Math.max(0,Math.floor(uv.y*hitCanvas.height))),1,1).data;
   return Math.min(pixel[0],pixel[2])-pixel[1]<46;
  }
  const models={};
- for(const flip of [false,true])for(const color of ['w','b'])for(const [column,type] of ['p','n','b','r','q','k'].entries()){
-  const texture=atlas.clone();texture.repeat.set((flip?-1:1)/6,.5);texture.offset.set((column+(flip?1:0))/6,color==='w'?.5:0);texture.needsUpdate=true;
-  const material=new THREE.SpriteMaterial({map:texture,transparent:true,alphaTest:.5,depthWrite:true,toneMapped:false});
+ for(const color of ['w','b'])for(const [column,type] of ['p','n','b','r','q','k'].entries()){
+  const texture=atlas.clone();texture.repeat.set(1/6,.5);texture.offset.set(column/6,color==='w'?.5:0);texture.needsUpdate=true;
+  const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,alphaTest:.5,depthWrite:true,toneMapped:false,side:THREE.DoubleSide});
   material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
    // Chroma-key the production atlas at render time; retain white fabric and gold.
    float key = min(diffuseColor.r, diffuseColor.b) - diffuseColor.g;
    if (key > 0.18) discard;
   `)};
-  const g=new THREE.Group(),figure=new THREE.Sprite(material);figure.center.set(.5,.035);const height=type==='p'?1.42:1.62;figure.scale.set(height,height,1);g.add(figure);
+  const g=new THREE.Group(),height=type==='p'?1.42:1.62,geometry=new THREE.PlaneGeometry(height,height);geometry.translate(0,height/2,0);const figure=new THREE.Mesh(geometry,material);figure.rotation.y=Math.PI/2;figure.userData.figure=true;g.add(figure);
   const plate=label(rankMarks[type],.42,.13,'#fff0bd','#101820');plate.quaternion.copy(camera.quaternion);plate.position.y=.12;plate.userData.rankLabel=true;g.add(plate);
-  models[`${flip}${color}${type}`]=g;
+  models[`${color}${type}`]=g;
  }
  function disposeHighlights(){for(const obj of [...highlights.children]){obj.geometry.dispose();obj.material.dispose();highlights.remove(obj)}}
- redraw3D=()=>{pieces.clear();disposeHighlights();game.board().forEach((row,r)=>row.forEach((p,c)=>{if(p){const g=models[`${flipped}${p.color}${p.type}`].clone();g.position.set(c-3.5,.085,r-3.5);g.children[1].quaternion.copy(camera.quaternion);g.traverse(m=>m.userData.square=square(r,c));pieces.add(g)}}));const add=(s,color,opacity)=>{const c=s.charCodeAt(0)-97,r=8-Number(s[1]);const h=new THREE.Mesh(new THREE.PlaneGeometry(.9,.9),new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false}));h.rotation.x=-Math.PI/2;h.position.set(c-3.5,.085,r-3.5);highlights.add(h)};const last=game.history({verbose:true}).at(-1);if(last){add(last.from,0x66a4b4,.28);add(last.to,0x66a4b4,.28)}if(selected)add(selected,0xffd36e,.55);for(const m of legal())add(m.to,0xffdc76,.43)};
+ redraw3D=()=>{pieces.clear();disposeHighlights();game.board().forEach((row,r)=>row.forEach((p,c)=>{if(p){const g=models[`${p.color}${p.type}`].clone();g.position.set(c-3.5,.085,r-3.5);g.children[1].quaternion.copy(camera.quaternion);g.traverse(m=>m.userData.square=square(r,c));pieces.add(g)}}));const add=(s,color,opacity)=>{const c=s.charCodeAt(0)-97,r=8-Number(s[1]);const h=new THREE.Mesh(new THREE.PlaneGeometry(.9,.9),new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false}));h.rotation.x=-Math.PI/2;h.position.set(c-3.5,.085,r-3.5);highlights.add(h)};const last=game.history({verbose:true}).at(-1);if(last){add(last.from,0x66a4b4,.28);add(last.to,0x66a4b4,.28)}if(selected)add(selected,0xffd36e,.55);for(const m of legal())add(m.to,0xffdc76,.43)};
  const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();let down=null;
  renderer.domElement.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY]});renderer.domElement.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>7)return;down=null;const b=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-b.left)/b.width*2-1,-(e.clientY-b.top)/b.height*2+1);ray.setFromCamera(pointer,camera);const hit=ray.intersectObjects([...tiles,...pieces.children],true).find(visibleHit);if(hit)choose(hit.object.userData.square)});
  function resize(){const w=$('stage').clientWidth,h=$('stage').clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe($('stage'));resize();has3D=true;$('loading').hidden=true;render();renderer.setAnimationLoop(()=>{if(!flat){controls.update();pieces.traverse(object=>{if(object.userData.rankLabel)object.quaternion.copy(camera.quaternion)});renderer.render(scene,camera)}});
