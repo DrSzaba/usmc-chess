@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>USMC Chess · Collector's Edition · El Szaba</title>
+ <meta name="description" content="Play El Szaba's Marine Corps inspired chess game. Sculpted 3D figures, a polished ceremonial board, and a complete game against a friend or computer.">
+ <link rel="stylesheet" href="style.css?v=collector-2">
+ <script type="importmap">{"imports":{"three":"../../vendor/three.module.js"}}</script>
+</head>
+<body>
+ <header>
+  <a class="brand" href="./" aria-label="USMC Chess home"><span class="seal">♜</span><span>USMC <b>CHESS</b><small>THE COLLECTOR'S EDITION</small></span></a>
+  <div class="maker">Designed for the game.<br><strong>Built with Semper Fi spirit.</strong></div>
+  <a class="support" href="https://cash.app/$Szaba" target="_blank" rel="noopener noreferrer">Support El Szaba ↗</a>
+ </header>
+ <main>
+  <section class="arena" aria-label="Chess game">
+   <div class="arena-top"><div><span class="eyebrow">HONOR. COURAGE. COMMITMENT.</span><h2>Every move has character.</h2></div><span class="edition">01 / CEREMONIAL SERIES</span></div>
+   <div id="stage"><div id="canvas"></div><div id="flat" hidden aria-label="Chessboard"></div><div id="loading">Crafting your board…</div></div>
+   <div class="camera-tools" aria-label="Camera controls">
+    <button id="reset-view" title="Restore the full board">Full board</button><button id="overhead">Overhead</button><button id="inspect">Inspect a Marine</button><button id="showcase" aria-pressed="false">Rotate display</button><span class="tool-separator"></span><button id="zoom-in" aria-label="Zoom in">＋</button><button id="zoom-out" aria-label="Zoom out">−</button>
+   </div>
+   <p id="instructions">Click a piece to move. Drag to rotate · Scroll to zoom · Right-drag to pan.</p>
+  </section>
+  <aside>
+   <div class="eyebrow">YOUR MATCH</div><h1 id="status" aria-live="polite">White to move</h1><p id="detail">Select a piece to see its legal moves.</p>
+   <div class="teams"><span><i class="white-dot"></i> Dress whites</span><span><i class="blue-dot"></i> Dress blues</span></div>
+   <label for="mode">Play against</label><select id="mode"><option value="cpu">Computer · casual</option><option value="local">A friend · same device</option></select>
+   <label for="promotion">Pawn promotion</label><select id="promotion"><option value="q">Queen · Colonel</option><option value="r">Rook · Gunnery Sergeant</option><option value="b">Bishop · Staff Sergeant</option><option value="n">Knight · Corporal</option></select>
+   <div class="buttons"><button id="new">New game</button><button id="undo">Undo move</button><button id="flip">Switch sides</button><button id="sound" aria-pressed="true">Sound on</button></div>
+   <div class="history-title">MOVE RECORD <span id="count">0 half-moves</span></div><ol id="history" aria-label="Move history"></ol>
+   <div class="secondary"><button id="view">Use 2D board</button></div>
+   <details><summary>The pieces &amp; their ranks</summary><dl><div><dt>Pawn</dt><dd>Private First Class</dd></div><div><dt>Knight</dt><dd>Corporal</dd></div><div><dt>Bishop</dt><dd>Staff Sergeant</dd></div><div><dt>Rook</dt><dd>Gunnery Sergeant</dd></div><div><dt>Queen</dt><dd>Colonel</dd></div><div><dt>King</dt><dd>General</dd></div></dl><p>Rank assignments are part of this game's theme. Each figure is modeled in three dimensions, including its back and sides.</p><a href="../../reference.png" target="_blank" rel="noopener">View the design reference ↗</a></details>
+  </aside>
+ </main>
+ <footer><span class="signature">EL <b>♛</b>SZABA</span><span>SEMPER FIDELIS</span><small>Independent fan project. Not affiliated with or endorsed by the U.S. Marine Corps.</small></footer>
+ <script type="module" src="game.js?v=collector-2"></script>
+</body></html>

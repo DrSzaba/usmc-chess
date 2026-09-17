@@ -1,0 +1,205 @@
+import * as T from 'three';
+import { mergeGeometries } from '../../vendor/BufferGeometryUtils.js';
+
+// All silhouettes are closed, volumetric meshes. Textures are confined to lettering
+// and surface finishes; no figure billboards or camera-facing sprites are used.
+export function makeWorkshop(environment) {
+ const material=(color,metalness=0,roughness=.4,extra={})=>new T.MeshPhysicalMaterial({color,metalness,roughness,envMap:environment,...extra});
+ const M={
+  gold:material('#c89438',.86,.22),goldLight:material('#eac36e',.82,.18),
+  ivory:material('#f4eee0',.05,.28,{clearcoat:.55,clearcoatRoughness:.2}),
+  navy:material('#082348',.12,.31,{clearcoat:.4}),black:material('#09131f',.25,.26),
+  red:material('#a5222b',.05,.38),skinW:material('#603722',0,.51),skinB:material('#d09a75',0,.51),
+  hair:material('#21160f',0,.64),shoe:material('#070a0e',.2,.2,{clearcoat:1}),
+  white:material('#fff9e9',.02,.48),silver:material('#c5d4dc',.87,.19),
+  ribbonBlue:material('#2379aa',.1,.37),ribbonGreen:material('#22644b',.1,.37),
+  lipW:material('#4f2820',0,.52),lipB:material('#a66d58',0,.5),gem:material('#a72237',.35,.2),
+ };
+ const add=(p,g,m,x=0,y=0,z=0)=>{const o=new T.Mesh(g,m);o.position.set(x,y,z);p.add(o);return o};
+ const sphereGeo=new T.SphereGeometry(1,20,14);
+ const ell=(p,x,y,z,rx,ry,rz,m)=>{const o=add(p,sphereGeo,m,x,y,z);o.scale.set(rx,ry,rz);return o};
+ const box=(p,w,h,d,m,x=0,y=0,z=0)=>add(p,new T.BoxGeometry(w,h,d),m,x,y,z);
+ const cyl=(p,rt,rb,h,m,x=0,y=0,z=0,n=40)=>add(p,new T.CylinderGeometry(rt,rb,h,n),m,x,y,z);
+ const ring=(p,r,t,m,x=0,y=0,z=0)=>{const o=add(p,new T.TorusGeometry(r,t,7,48),m,x,y,z);o.rotation.x=Math.PI/2;return o};
+ function line(p,points,r,m){const curve=new T.CatmullRomCurve3(points.map(a=>new T.Vector3(...a)));return add(p,new T.TubeGeometry(curve,Math.max(8,points.length*5),r,6,false),m)}
+ function limb(p,a,b,ra,rb,m){const av=new T.Vector3(...a),bv=new T.Vector3(...b),mid=av.clone().add(bv).multiplyScalar(.5),o=cyl(p,rb,ra,av.distanceTo(bv),m,...mid.toArray(),20);o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),bv.sub(av).normalize());return o}
+ function profile(p,rows,m,segments=48,flutes=0){
+  const pos=[],uv=[],idx=[];
+  for(let j=0;j<rows.length;j++){const [y,rx,rz,cz=0]=rows[j];for(let i=0;i<=segments;i++){const a=i/segments*Math.PI*2,f=1+Math.cos(a*12)*flutes;pos.push(Math.sin(a)*rx*f,y,Math.cos(a)*rz*f+cz);uv.push(i/segments,j/(rows.length-1));}}
+  for(let j=0;j<rows.length-1;j++)for(let i=0;i<segments;i++){const k=j*(segments+1)+i;idx.push(k,k+1,k+segments+1,k+1,k+segments+2,k+segments+1)}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return add(p,g,m);
+ }
+ function star(p,r,x,y,z,m=M.goldLight){const s=new T.Shape();for(let i=0;i<10;i++){const a=i*Math.PI/5,rr=i%2?r*.43:r,xx=Math.sin(a)*rr,yy=Math.cos(a)*rr;i?s.lineTo(xx,yy):s.moveTo(xx,yy)}s.closePath();return add(p,new T.ExtrudeGeometry(s,{depth:.008,bevelEnabled:false}),m,x,y,z)}
+ function text(p,words,w,h,x,y,z,ry=0){const c=document.createElement('canvas');c.width=1024;c.height=256;const ctx=c.getContext('2d');ctx.fillStyle='#edd29a';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 88px Georgia';ctx.fillText(words,512,128,980);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;const o=add(p,new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}),x,y,z);o.rotation.y=ry;return o}
+ function anchor(p,x,y,z,scale=1){const g=new T.Group();g.position.set(x,y,z);g.scale.setScalar(scale);p.add(g);line(g,[[0,.13,0],[0,.03,0],[0,-.13,0]],.014,M.gold);line(g,[[-.12,-.04,0],[-.10,-.12,0],[0,-.17,0],[.10,-.12,0],[.12,-.04,0]],.012,M.gold);line(g,[[-.085,.07,0],[.085,.07,0]],.012,M.gold);const r=ring(g,.029,.009,M.gold,0,.15,0);r.rotation.x=0;return g}
+ function insignia(p,x,y,z,scale=1){const g=new T.Group();g.position.set(x,y,z);g.scale.setScalar(scale);p.add(g);ell(g,0,0,0,.10,.10,.043,M.gold);const rr=ring(g,.10,.008,M.goldLight);rr.rotation.x=0;line(g,[[-.12,.10,0],[-.22,.16,0],[-.07,.12,.01],[0,.16,.025],[.07,.12,.01],[.22,.16,0],[.12,.10,0]],.015,M.gold);anchor(g,.015,-.015,-.015,1.1);return g}
+ function bake(group){
+  group.updateMatrixWorld(true);const byMaterial=new Map(),labels=[];
+  group.traverse(o=>{if(!o.isMesh)return;if(o.material.transparent){const c=o.clone();c.applyMatrix4(o.parent.matrixWorld);labels.push(c);return}const geo=o.geometry.clone().applyMatrix4(o.matrixWorld);const plain=geo.index?geo.toNonIndexed():geo;for(const key of Object.keys(plain.attributes))if(!['position','normal','uv'].includes(key))plain.deleteAttribute(key);if(!plain.attributes.uv)plain.setAttribute('uv',new T.BufferAttribute(new Float32Array(plain.attributes.position.count*2),2));if(!byMaterial.has(o.material))byMaterial.set(o.material,[]);byMaterial.get(o.material).push(plain)});
+  const out=new T.Group();for(const [m,list] of byMaterial){const geo=mergeGeometries(list,false);if(!geo)throw Error('Could not merge sculpture geometry');const o=new T.Mesh(geo,m);o.castShadow=true;o.receiveShadow=true;out.add(o);for(const g of list)g.dispose()}for(const o of labels)out.add(o);return out;
+ }
+ function base(g,type){
+  profile(g,[[0,0,0],[0,.405,.405],[.035,.435,.435],[.065,.435,.435],[.083,.4,.4],[.11,.4,.4],[.135,.38,.38],[.27,.38,.38],[.29,.41,.41],[.315,.41,.41],[.34,.36,.36],[.365,.36,.36],[.365,0,0]],M.navy,64);
+  for(const [y,r,t] of [[.035,.429,.012],[.08,.411,.015],[.127,.386,.009],[.278,.397,.013],[.312,.405,.014],[.352,.356,.011]])ring(g,r,t,M.goldLight,0,y);
+  cyl(g,.352,.352,.025,M.ivory,0,.365);
+  for(let i=0;i<10;i++){const a=i*Math.PI/5,s=star(g,.037,Math.sin(a)*.384,.207,Math.cos(a)*.384);s.rotation.y=a}
+  const rank={p:'PFC',b:'SSGT',n:'CPL',r:'GYSGT',q:'COL',k:'GEN'}[type];
+  for(const a of [0,Math.PI])text(g,rank,.29,.084,Math.sin(a)*.42,.063,Math.cos(a)*.42,a);
+ }
+ function face(g,skin,y,female=false){
+  const head=new T.Group();head.position.y=y;g.add(head);
+  profile(head,[[-.155,0,0,.003],[-.145,.05,.055,.015],[-.12,.087,.078,.014],[-.075,.108,.087,.009],[0,.113,.093,0],[.08,.105,.09,-.005],[.135,.075,.064,-.008],[.154,0,0,-.008]],skin,40);
+  ell(head,0,.059,-.044,.109,.105,.064,M.hair);
+  // Brow ridges, inset eyes, bridge, nostrils, lips and ears remain dimensional.
+  for(const sign of [-1,1]){
+   ell(head,sign*.111,-.01,-.007,.026,.045,.025,skin);
+   ell(head,sign*.044,.016,.087,.032,.013,.014,M.white);
+   ell(head,sign*.044,.016,.099,.010,.011,.004,M.hair);
+   line(head,[[sign*.018,.035,.087],[sign*.044,.041,.093],[sign*.073,.033,.081]],.007,M.hair);
+   line(head,[[sign*.015,.022,.09],[sign*.044,.029,.101],[sign*.073,.02,.085]],.004,skin);
+   ell(head,sign*.066,-.032,.072,.029,.029,.024,skin);
+   ell(head,sign*.021,-.049,.105,.013,.009,.013,skin);
+  }
+  ell(head,0,-.014,.101,.018,.041,.022,skin);ell(head,0,-.044,.119,.023,.017,.021,skin);
+  const lip=skin===M.skinW?M.lipW:M.lipB;
+  line(head,[[-.034,-.087,.083],[0,-.084,.099],[.034,-.087,.083]],female?.007:.0045,lip);
+  ell(head,0,-.10,.085,.026,.008,.009,lip);
+  if(female){ell(head,0,.025,-.09,.12,.13,.052,M.hair);ell(head,0,-.025,-.14,.075,.078,.063,M.hair);for(const sign of [-1,1]){ell(head,sign*.11,-.077,.012,.009,.019,.009,M.goldLight)}}
+  return head;
+ }
+ function marine(g,type,color){
+  const u=color==='w'?M.ivory:M.navy,skin=color==='w'?M.skinW:M.skinB;
+  const body=new T.Group();g.add(body);const senior=type!=='p';
+  // Anatomical proportions: boots, shaped trouser legs, jacket waist and shoulders.
+  for(const sign of [-1,1]){
+   const x=sign*.094;
+   ell(body,x,.409,.043,.077,.055,.145,M.shoe);
+   const leg=profile(body,[[.44,.058,.06],[.53,.055,.057],[.73,.064,.067],[.86,.067,.07],[.97,.079,.083],[1.01,.077,.082]],u,28);leg.position.x=x;
+   line(body,[[x+sign*.061,.46,.013],[x+sign*.065,.71,.005],[x+sign*.077,.96,0]],.008,color==='w'?M.gold:M.red);
+   line(body,[[x,.50,.061],[x,.74,.072],[x,1.00,.085]],.003,u);
+  }
+  profile(body,[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,40);
+  cyl(body,.069,.065,.07,skin,0,1.44,0,32);
+  // Standing collar, red piping, belt and a small raised buckle.
+  profile(body,[[1.389,.075,.061],[1.447,.074,.060],[1.452,.07,.058]],u,32);
+  line(body,[[-.06,1.447,.035],[0,1.447,.063],[.06,1.447,.035]],.005,color==='w'?M.gold:M.red);
+  const belt=profile(body,[[1.035,.15,.106],[1.071,.149,.105]],M.black,40);
+  box(body,.055,.038,.02,M.goldLight,0,1.054,.113);
+  for(let i=0;i<5;i++)ell(body,0,1.10+i*.061,.118,.012,.012,.006,M.goldLight);
+  for(const sign of [-1,1]){
+   ell(body,sign*.188,1.335,0,.07,.081,.082,u);
+   limb(body,[sign*.204,1.335,0],[sign*.235,1.13,.012],.065,.048,u);
+   ell(body,sign*.235,1.126,.012,.049,.044,.049,u);
+   limb(body,[sign*.235,1.13,.012],[sign*.221,.972,.041],.048,.039,u);
+   const cuff=ring(body,.042,.008,M.gold,sign*.222,.992,.04);cuff.scale.z=.9;
+   ell(body,sign*.222,.926,.047,.042,.058,.03,M.white);
+   for(let f=0;f<3;f++)line(body,[[sign*.208+f*.009,.933,.074],[sign*.208+f*.009,.903,.072]],.002,u);
+   // Shoulder boards and embroidered rank chevrons.
+   box(body,.109,.022,.055,M.gold,sign*.152,1.393,0);
+   for(let j=0;j<(type==='p'?1:3);j++)line(body,[[sign*.276,1.267-j*.025,-.025],[sign*.281,1.245-j*.025,.008],[sign*.272,1.267-j*.025,.044]],.005,M.goldLight);
+  }
+  // Pockets, nameplate, ribbon racks and suspended miniature medals.
+  for(const x of [-.092,.092]){box(body,.083,.057,.011,u,x,1.197,.111);line(body,[[x-.04,1.222,.121],[x,1.212,.127],[x+.04,1.222,.121]],.004,u)}
+  const ribbons=[M.red,M.ribbonBlue,M.gold,M.ribbonGreen,M.white,M.red,M.gold,M.ribbonBlue,M.ribbonGreen];
+  for(let j=0;j<(senior?9:6);j++)box(body,.021,.013,.008,ribbons[j],-.127+(j%3)*.025,1.30-Math.floor(j/3)*.016,.119);
+  box(body,.069,.011,.009,M.gold,.095,1.292,.123);
+  for(let i=0;i<(senior?3:1);i++){const x=-.118+i*.031;box(body,.015,.027,.007,M.ribbonBlue,x,1.224,.133);ell(body,x,1.202,.137,.014,.017,.005,M.gold)}
+  const head=face(body,skin,1.607);
+  // Peaked cover with elliptical crown, band, black brim and raised insignia.
+  const crown=profile(body,[[1.704,.117,.10],[1.719,.146,.129],[1.752,.15,.132],[1.777,.129,.115],[1.786,0,0]],u,48);
+  profile(body,[[1.685,.12,.101],[1.718,.124,.105]],M.black,40);
+  const brim=ell(body,0,1.684,.078,.134,.014,.096,M.shoe);
+  line(body,[[-.106,1.702,.047],[0,1.696,.107],[.106,1.702,.047]],.006,M.gold);
+  insignia(body,0,1.742,.131,.15);
+  if(senior){
+   for(let j=0;j<2;j++)line(body,[[.158,1.373,.086],[.188+j*.007,1.291,.124],[.151,1.173-j*.014,.146],[.078,1.157-j*.014,.143],[.033,1.26,.133],[.032,1.341,.118]],.009,M.gold);
+   for(let j=0;j<3;j++)line(body,[[.15+j*.008,1.365,.085],[.17+j*.008,1.24,.12],[.18+j*.008,1.18,.1]],.005,M.goldLight);
+   // Dress sword and scabbard along the officer's left hip.
+   limb(body,[-.27,.995,.06],[-.30,.43,.10],.019,.011,M.black);
+   limb(body,[-.268,1.10,.055],[-.27,.995,.06],.014,.014,M.gold);
+   line(body,[[-.31,1.01,.06],[-.27,.993,.082],[-.23,1.01,.06]],.009,M.gold);
+   if(type==='k'){for(let j=0;j<4;j++)star(body,.014,-.04+j*.026,1.405,.077);for(let j=0;j<3;j++)ring(body,.019,.004,M.goldLight,.27,1.08+j*.04,.042)}
+  }
+  // King is slightly taller, while every figure still fits its own square.
+  const scale=type==='k'?1.10:type==='b'?1.03:.95;
+  body.position.y=.38*(1-scale);body.scale.y=scale;
+ }
+ function queen(g,color){
+  const u=color==='w'?M.ivory:M.navy,skin=color==='w'?M.skinW:M.skinB;
+  const rows=[[.379,0,0],[.38,.326,.297],[.43,.326,.297],[.55,.3,.278],[.70,.27,.25],[.86,.23,.22],[1.03,.185,.185],[1.17,.129,.12],[1.24,.118,.104],[1.33,.149,.106],[1.40,.164,.107],[1.45,.14,.085],[1.48,.06,.048]];
+  profile(g,rows,u,72,.014);
+  // Gold brocade follows the gown's volume, rather than floating in front of it.
+  for(let j=0;j<14;j++){const a=j*Math.PI*2/14,points=rows.slice(1,10).map(([y,rx,rz])=>[Math.sin(a)*(rx+.005),y,Math.cos(a)*(rz+.005)]);line(g,points,j%2?.0035:.006,M.gold);
+   for(let k=0;k<6;k++){const y=.46+k*.103,r=.326-(y-.43)*.25;const pts=[];for(let t=0;t<=16;t++){const b=t/16*Math.PI*2,aa=a+Math.sin(b)*.038;pts.push([Math.sin(aa)*(r+.005),y+Math.cos(b)*.032,Math.cos(aa)*(r*.93+.006)])}line(g,pts,.003,M.goldLight)}
+  }
+  ring(g,.321,.014,M.gold,0,.401).scale.z=.92;
+  ring(g,.314,.005,M.goldLight,0,.448).scale.z=.92;
+  line(g,[[-.12,1.432,.061],[-.07,1.408,.103],[0,1.398,.112],[.07,1.408,.103],[.12,1.432,.061]],.011,M.gold);
+  for(const sign of [-1,1]){
+   ell(g,sign*.16,1.404,0,.053,.065,.067,u);
+   limb(g,[sign*.174,1.399,0],[sign*.195,1.195,.019],.049,.035,u);
+   limb(g,[sign*.195,1.195,.019],[sign*.177,1.04,.044],.035,.029,u);
+   ell(g,sign*.177,1.01,.044,.03,.052,.027,skin);
+   line(g,[[sign*.18,1.39,.055],[sign*.209,1.2,.052],[sign*.19,1.064,.07]],.005,M.gold);
+  }
+  cyl(g,.047,.052,.093,skin,0,1.507);
+  face(g,skin,1.668,true);
+  // Tiara with individual arches and ruby cabochons.
+  ring(g,.12,.011,M.gold,0,1.786).scale.z=.89;
+  for(let j=0;j<9;j++){const a=(j-4)*.31,r=.12,h=.06+.028*(1-Math.abs(j-4)/4);line(g,[[Math.sin(a-.12)*r,1.79,Math.cos(a-.12)*r],[Math.sin(a)*r,1.79+h,Math.cos(a)*r],[Math.sin(a+.12)*r,1.79,Math.cos(a+.12)*r]],.007,M.gold);ell(g,Math.sin(a)*r,1.796+h,Math.cos(a)*r,.01,.016,.009,j%2?M.goldLight:M.gem)}
+  ell(g,0,1.459,.092,.014,.02,.008,M.gem);
+ }
+ function horse(g,color){
+  const u=color==='w'?M.ivory:M.navy;
+  // Four articulated legs, a muscular barrel, haunches, chest and a curved neck.
+  ell(g,0,.923,-.018,.197,.22,.325,M.ivory);
+  ell(g,0,.92,-.205,.205,.23,.188,M.ivory);
+  ell(g,0,.969,.176,.18,.24,.16,M.ivory);
+  for(const sign of [-1,1]){
+   const x=sign*.13;
+   limb(g,[x,.91,-.20],[x,.67,-.25],.073,.047,M.ivory);ell(g,x,.66,-.25,.05,.061,.051,M.ivory);
+   limb(g,[x,.65,-.25],[x,.435,-.205],.039,.028,M.ivory);
+   limb(g,[x,.956,.185],[x,.68,.205],.062,.038,M.ivory);ell(g,x,.68,.205,.043,.051,.045,M.ivory);
+   limb(g,[x,.67,.205],[x,.433,.24],.033,.029,M.ivory);
+   for(const z of [-.2,.245]){ell(g,x,.407,z,.052,.038,.073,M.gold);ell(g,x,.447,z-.006,.037,.036,.048,M.ivory)}
+  }
+  const neck=profile(g,[[.98,.154,.147,.18],[1.12,.141,.16,.17],[1.27,.112,.141,.14],[1.41,.085,.112,.12],[1.51,.07,.084,.16]],M.ivory,40);
+  const head=ell(g,0,1.519,.218,.099,.15,.141,M.ivory);head.rotation.x=-.48;
+  ell(g,0,1.431,.368,.083,.067,.118,M.ivory);
+  ell(g,0,1.4,.401,.076,.043,.072,M.ivory);
+  for(const sign of [-1,1]){
+   ell(g,sign*.056,1.448,.422,.009,.016,.02,M.black);
+   ell(g,sign*.092,1.54,.285,.012,.021,.028,M.gold);ell(g,sign*.103,1.54,.29,.008,.012,.013,M.black);
+   const ear=ell(g,sign*.065,1.689,.148,.03,.091,.038,M.ivory);ear.rotation.z=-sign*.19;ell(g,sign*.065,1.69,.174,.014,.056,.011,M.gold);
+   line(g,[[sign*.082,1.44,.4],[sign*.092,1.50,.30],[sign*.075,1.617,.15]],.009,M.gold);
+   line(g,[[sign*.086,1.45,.39],[sign*.18,1.23,.17],[sign*.17,1.03,-.08]],.007,M.gold);
+  }
+  line(g,[[-.074,1.435,.391],[0,1.411,.447],[.074,1.435,.391]],.01,M.gold);
+  // Individually curved mane locks and flowing tail.
+  for(let j=0;j<13;j++){const y=1.60-j*.037,z=.103-(1.60-y)*.27;line(g,[[0,y,z],[.036,y-.045,z-.04],[.02,y-.083,z-.054]],.022,M.ivory)}
+  for(let j=0;j<5;j++){const x=(j-2)*.019;line(g,[[x,.96,-.31],[x+.025,.77,-.386],[x+.052,.54,-.33],[x+.042,.42,-.29]],.017,M.ivory)}
+  const blanket=ell(g,0,1.065,-.06,.208,.044,.208,u);
+  line(g,[[-.202,1.039,.05],[-.198,1.037,-.20],[0,1.10,-.24],[.198,1.037,-.20],[.202,1.039,.05]],.009,M.gold);
+  ell(g,0,1.10,-.065,.116,.039,.132,M.gold);
+  line(g,[[-.168,1.01,.13],[0,.89,.3],[.168,1.01,.13]],.014,M.gold);
+  for(const sign of [-1,1]){const medal=insignia(g,sign*.20,.923,-.07,.21);medal.rotation.y=sign*Math.PI/2;const stirrup=ring(g,.06,.009,M.gold,sign*.222,.84,-.045);stirrup.rotation.x=0;stirrup.rotation.y=Math.PI/2}
+ }
+ function tower(g,color){
+  const u=color==='w'?M.ivory:M.navy;
+  box(g,.50,.075,.50,M.gold,.0,.414);box(g,.45,.10,.45,u,0,.478);box(g,.48,.027,.48,M.goldLight,0,.539);
+  box(g,.393,.87,.393,u,0,.985);
+  for(const x of [-.2,.2])for(const z of [-.2,.2]){box(g,.026,.9,.026,M.goldLight,x,.992,z);box(g,.046,.043,.046,M.gold,x,.576,z);box(g,.046,.055,.046,M.gold,x,1.405,z)}
+  for(let i=0;i<4;i++){const face=new T.Group();face.rotation.y=i*Math.PI/2;g.add(face);
+   box(face,.102,.22,.008,M.black,0,1.24,.202);for(const x of [-.061,.061])box(face,.009,.242,.016,M.gold,x,1.24,.208);box(face,.13,.012,.016,M.gold,0,1.366,.208);box(face,.13,.012,.016,M.gold,0,1.119,.208);
+   insignia(face,0,.848,.21,.59);
+   line(face,[[-.142,.64,.207],[-.142,1.05,.207],[.142,1.05,.207],[.142,.64,.207],[-.142,.64,.207]],.006,M.gold);
+  }
+  box(g,.50,.072,.50,M.gold,0,1.461);box(g,.53,.038,.53,u,0,1.515);
+  const roof=cyl(g,.012,.39,.286,u,0,1.677,0,4);roof.rotation.y=Math.PI/4;
+  for(const x of [-.269,.269])for(const z of [-.269,.269])limb(g,[x,1.534,z],[0,1.821,0],.009,.006,M.goldLight);
+  for(const z of [-.268,.268])box(g,.544,.021,.021,M.goldLight,0,1.537,z);for(const x of [-.268,.268])box(g,.021,.021,.544,M.goldLight,x,1.537,0);
+  cyl(g,.025,.039,.053,M.gold,0,1.848);ell(g,0,1.915,0,.058,.068,.058,M.goldLight);ring(g,.063,.005,M.gold,0,1.909);
+ }
+ function piece(type,color){const raw=new T.Group();base(raw,type);if(type==='r')tower(raw,color);else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,sculpture:true};return out}
+ return {M,material,add,ell,box,cyl,ring,line,profile,star,text,insignia,bake,piece};
+}
