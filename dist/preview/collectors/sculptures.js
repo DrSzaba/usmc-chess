@@ -43,6 +43,8 @@ export function makeWorkshop(environment) {
   for(const [y,r,t] of [[.035,.429,.012],[.08,.411,.015],[.127,.386,.009],[.278,.397,.013],[.312,.405,.014],[.352,.356,.011]])ring(g,r,t,M.goldLight,0,y);
   cyl(g,.352,.352,.025,M.ivory,0,.365);
   for(let i=0;i<10;i++){const a=i*Math.PI/5,s=star(g,.037,Math.sin(a)*.384,.207,Math.cos(a)*.384);s.rotation.y=a}
+  for(let j=0;j<20;j++){const a=j*Math.PI/10;ell(g,Math.sin(a)*.418,.302,Math.cos(a)*.418,.008,.008,.008,M.goldLight)}
+  ring(g,.347,.004,M.goldLight,0,.368);
   const rank={p:'PFC',b:'SSGT',n:'CPL',r:'GYSGT',q:'COL',k:'GEN'}[type];
   for(const a of [0,Math.PI])text(g,rank,.29,.084,Math.sin(a)*.42,.063,Math.cos(a)*.42,a);
  }
@@ -106,11 +108,35 @@ export function makeWorkshop(environment) {
   for(let i=0;i<(senior?3:1);i++){const x=-.118+i*.031;box(body,.015,.027,.007,M.ribbonBlue,x,1.224,.133);ell(body,x,1.202,.137,.014,.017,.005,M.gold)}
   const head=face(body,skin,1.607);
   // Peaked cover with elliptical crown, band, black brim and raised insignia.
-  const crown=profile(body,[[1.704,.117,.10],[1.719,.146,.129],[1.752,.15,.132],[1.777,.129,.115],[1.786,0,0]],u,48);
-  profile(body,[[1.685,.12,.101],[1.718,.124,.105]],M.black,40);
-  const brim=ell(body,0,1.684,.078,.134,.014,.096,M.shoe);
-  line(body,[[-.106,1.702,.047],[0,1.696,.107],[.106,1.702,.047]],.006,M.gold);
-  insignia(body,0,1.742,.131,.15);
+  if(type==='b'){
+   // The bishop alone wears a slim, soaring ceremonial mitre. The narrow
+   // silhouette, tapered crest and vertical gold slit remain legible from afar.
+   profile(body,[[1.696,.128,.112],[1.722,.137,.119],[1.744,.118,.103],[1.82,.108,.086],[1.98,.082,.065],[2.15,.047,.039],[2.24,.012,.014],[2.255,0,0]],u,48);
+   for(const [y,rx,rz] of [[1.71,.137,.119],[1.751,.116,.101],[1.96,.085,.068]])ring(body,rx,.008,M.goldLight,0,y).scale.z=rz/rx;
+   for(const sign of [-1,1])line(body,[[sign*.106,1.75,.054],[sign*.087,1.91,.055],[sign*.047,2.12,.034],[0,2.248,.005]],.006,M.gold);
+   line(body,[[0,1.756,.109],[0,1.97,.073],[0,2.23,.012]],.009,M.goldLight);
+   ell(body,0,1.858,.095,.026,.038,.012,M.gold);
+   ell(body,0,1.858,.108,.011,.016,.006,M.gem);
+   const crest=ell(body,0,2.257,0,.021,.026,.021,M.goldLight);
+   for(const sign of [-1,1]){
+    line(body,[[sign*.127,1.725,0],[sign*.129,1.70,.083],[sign*.10,1.68,.105]],.007,M.gold);
+    line(body,[[sign*.107,1.746,-.04],[sign*.08,1.90,-.045],[sign*.026,2.18,-.014]],.004,M.goldLight);
+   }
+  }else{
+   const crown=profile(body,[[1.704,.117,.10],[1.719,.146,.129],[1.752,.15,.132],[1.777,.129,.115],[1.786,0,0]],u,48);
+   profile(body,[[1.685,.12,.101],[1.718,.124,.105]],M.black,40);
+   const brim=ell(body,0,1.684,.078,.134,.014,.096,M.shoe);
+   line(body,[[-.106,1.702,.047],[0,1.696,.107],[.106,1.702,.047]],.006,M.gold);
+   insignia(body,0,1.742,.131,.15);
+  }
+  if(type==='b'){
+   // A narrow ceremonial stole with embroidered edges distinguishes the bishop's coat.
+   for(const sign of [-1,1]){
+    line(body,[[sign*.058,1.388,.086],[sign*.072,1.29,.126],[sign*.079,1.12,.12],[sign*.085,.99,.096]],.012,M.gold);
+    line(body,[[sign*.045,1.382,.09],[sign*.056,1.29,.131],[sign*.063,1.12,.126]],.004,M.goldLight);
+    for(let j=0;j<4;j++)ell(body,sign*.077,1.25-j*.072,.133,.007,.009,.005,M.goldLight);
+   }
+  }
   if(senior){
    for(let j=0;j<2;j++)line(body,[[.158,1.373,.086],[.188+j*.007,1.291,.124],[.151,1.173-j*.014,.146],[.078,1.157-j*.014,.143],[.033,1.26,.133],[.032,1.341,.118]],.009,M.gold);
    for(let j=0;j<3;j++)line(body,[[.15+j*.008,1.365,.085],[.17+j*.008,1.24,.12],[.18+j*.008,1.18,.1]],.005,M.goldLight);
@@ -120,8 +146,15 @@ export function makeWorkshop(environment) {
    line(body,[[-.31,1.01,.06],[-.27,.993,.082],[-.23,1.01,.06]],.009,M.gold);
    if(type==='k'){for(let j=0;j<4;j++)star(body,.014,-.04+j*.026,1.405,.077);for(let j=0;j<3;j++)ring(body,.019,.004,M.goldLight,.27,1.08+j*.04,.042)}
   }
-  // King is slightly taller, while every figure still fits its own square.
-  const scale=type==='k'?1.10:type==='b'?1.03:.95;
+  // Fine raised seams, collar braid, cuff studs and polished boot caps.
+  for(const sign of [-1,1]){
+   line(body,[[sign*.175,1.36,.073],[sign*.149,1.287,.109],[sign*.123,1.095,.107]],.003,M.goldLight);
+   ell(body,sign*.222,1.002,.081,.009,.009,.005,M.goldLight);
+   line(body,[[sign*.055,.458,.155],[sign*.094,.449,.167],[sign*.144,.458,.15]],.005,M.gold);
+  }
+  for(const y of [1.398,1.417,1.439])line(body,[[-.055,y,.058],[0,y,.071],[.055,y,.058]],.0025,M.goldLight);
+  // The bishop's taller hat is balanced by a slightly shorter coat, not an oversized base.
+  const scale=type==='k'?1.10:type==='b'?.98:.95;
   body.position.y=.38*(1-scale);body.scale.y=scale;
  }
  function queen(g,color){
@@ -148,6 +181,10 @@ export function makeWorkshop(environment) {
   ring(g,.12,.011,M.gold,0,1.786).scale.z=.89;
   for(let j=0;j<9;j++){const a=(j-4)*.31,r=.12,h=.06+.028*(1-Math.abs(j-4)/4);line(g,[[Math.sin(a-.12)*r,1.79,Math.cos(a-.12)*r],[Math.sin(a)*r,1.79+h,Math.cos(a)*r],[Math.sin(a+.12)*r,1.79,Math.cos(a+.12)*r]],.007,M.gold);ell(g,Math.sin(a)*r,1.796+h,Math.cos(a)*r,.01,.016,.009,j%2?M.goldLight:M.gem)}
   ell(g,0,1.459,.092,.014,.02,.008,M.gem);
+  // Three concentric embroidered hems, pendant stones and raised filigree.
+  for(const [y,r] of [[.49,.311],[.57,.295],[.86,.23]])ring(g,r,.004,M.goldLight,0,y).scale.z=.94;
+  for(let j=0;j<18;j++){const a=j*Math.PI/9;ell(g,Math.sin(a)*.306,.487,Math.cos(a)*.285,.009,.018,.009,j%3?M.goldLight:M.gem)}
+  for(const sign of [-1,1])line(g,[[sign*.085,1.36,.104],[sign*.105,1.31,.115],[sign*.07,1.27,.116],[0,1.26,.122]],.005,M.goldLight);
  }
  function horse(g,color){
   const u=color==='w'?M.ivory:M.navy;
@@ -175,6 +212,11 @@ export function makeWorkshop(environment) {
    line(g,[[sign*.086,1.45,.39],[sign*.18,1.23,.17],[sign*.17,1.03,-.08]],.007,M.gold);
   }
   line(g,[[-.074,1.435,.391],[0,1.411,.447],[.074,1.435,.391]],.01,M.gold);
+  // Braided bridle rings, stitched blanket edging and raised harness fittings.
+  for(const sign of [-1,1]){
+   for(let j=0;j<5;j++)ell(g,sign*.097,1.51-j*.038,.307-j*.026,.007,.007,.006,M.goldLight);
+   ell(g,sign*.092,1.465,.389,.017,.017,.008,M.goldLight);
+  }
   // Individually curved mane locks and flowing tail.
   for(let j=0;j<13;j++){const y=1.60-j*.037,z=.103-(1.60-y)*.27;line(g,[[0,y,z],[.036,y-.045,z-.04],[.02,y-.083,z-.054]],.022,M.ivory)}
   for(let j=0;j<5;j++){const x=(j-2)*.019;line(g,[[x,.96,-.31],[x+.025,.77,-.386],[x+.052,.54,-.33],[x+.042,.42,-.29]],.017,M.ivory)}
@@ -194,6 +236,7 @@ export function makeWorkshop(environment) {
    insignia(face,0,.848,.21,.59);
    line(face,[[-.142,.64,.207],[-.142,1.05,.207],[.142,1.05,.207],[.142,.64,.207],[-.142,.64,.207]],.006,M.gold);
   }
+  for(let j=0;j<4;j++)for(const x of [-.17,.17])ell(g,x,.67+j*.17,.207,.01,.012,.006,M.goldLight);
   box(g,.50,.072,.50,M.gold,0,1.461);box(g,.53,.038,.53,u,0,1.515);
   const roof=cyl(g,.012,.39,.286,u,0,1.677,0,4);roof.rotation.y=Math.PI/4;
   for(const x of [-.269,.269])for(const z of [-.269,.269])limb(g,[x,1.534,z],[0,1.821,0],.009,.006,M.goldLight);
