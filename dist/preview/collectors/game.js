@@ -26,25 +26,59 @@ soundButton.onclick=async()=>{
  if(soundEnabled){await unlockAudio();playCue('test')}
 };
 testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}playCue('test')};
+let woodNoise=null;
+function noiseFor(ctx){
+ if(woodNoise&&woodNoise.sampleRate===ctx.sampleRate)return woodNoise;
+ const length=Math.ceil(ctx.sampleRate*.35);
+ woodNoise=ctx.createBuffer(1,length,ctx.sampleRate);
+ const data=woodNoise.getChannelData(0);
+ for(let i=0;i<length;i++)data[i]=(Math.random()*2-1);
+ return woodNoise;
+}
 async function playCue(kind){
  if(!soundEnabled)return;
  const ctx=await unlockAudio();if(!ctx)return;
- const now=ctx.currentTime+.012;
- const tone=(freq,at,duration,level=.20,wave='triangle')=>{
-  const osc=ctx.createOscillator(),gain=ctx.createGain();
-  osc.type=wave;osc.frequency.setValueAtTime(freq,now+at);
-  gain.gain.setValueAtTime(.0001,now+at);
-  gain.gain.exponentialRampToValueAtTime(level,now+at+.012);
-  gain.gain.exponentialRampToValueAtTime(.0001,now+at+duration);
-  osc.connect(gain).connect(ctx.destination);
-  osc.start(now+at);osc.stop(now+at+duration+.015);
- };
- if(kind==='test'){tone(523,0,.25,.24);tone(659,.27,.25,.24);tone(784,.54,.35,.25);return}
- if(kind==='select'){tone(520,0,.09,.12);return}
- if(kind==='move'){tone(285,0,.15,.22);tone(175,.06,.18,.15);return}
- if(kind==='capture'){tone(180,0,.24,.24,'sawtooth');tone(100,.07,.3,.20);tone(510,.14,.12,.11);return}
- if(kind==='check'){tone(260,0,.22,.22,'sawtooth');tone(390,.18,.26,.22);tone(520,.36,.32,.24);return}
- if(kind==='mate'){tone(196,0,.40,.23,'sawtooth');tone(294,.23,.45,.24);tone(392,.45,.55,.25);tone(588,.70,.75,.24)}
+ const start=ctx.currentTime+.012,noise=noiseFor(ctx);
+ function woodenClack(delay=0,weight=1,depth=1){
+  const at=start+delay;
+  // A very short filtered impact resembles hardwood meeting hardwood.
+  const strike=ctx.createBufferSource(),band=ctx.createBiquadFilter(),low=ctx.createBiquadFilter(),impact=ctx.createGain();
+  strike.buffer=noise;band.type='bandpass';band.frequency.value=720/depth;band.Q.value=.64;
+  low.type='lowpass';low.frequency.value=1850/depth;
+  impact.gain.setValueAtTime(.0001,at);
+  impact.gain.exponentialRampToValueAtTime(.30*weight,at+.003);
+  impact.gain.exponentialRampToValueAtTime(.0001,at+.105*depth);
+  strike.connect(band).connect(low).connect(impact).connect(ctx.destination);
+  strike.start(at);strike.stop(at+.13*depth);
+  // Brief, damped body resonance: pitch falls instead of beeping.
+  for(const [freq,volume,decay] of [[155,.15,.16],[288,.09,.09],[470,.032,.055]]){
+   const osc=ctx.createOscillator(),gain=ctx.createGain();
+   osc.type='sine';osc.frequency.setValueAtTime(freq/depth,at);
+   osc.frequency.exponentialRampToValueAtTime(freq*.70/depth,at+decay);
+   gain.gain.setValueAtTime(.0001,at);
+   gain.gain.exponentialRampToValueAtTime(volume*weight,at+.003);
+   gain.gain.exponentialRampToValueAtTime(.0001,at+decay);
+   osc.connect(gain).connect(ctx.destination);
+   osc.start(at);osc.stop(at+decay+.01);
+  }
+ }
+ if(kind==='select'){woodenClack(0,.35,.72);return}
+ if(kind==='move'){woodenClack(0,.9,1);return}
+ if(kind==='capture'){
+  woodenClack(0,1.05,1.18);
+  woodenClack(.095,1.2,1.42);
+  woodenClack(.19,.46,.75);
+  return;
+ }
+ if(kind==='check'){
+  woodenClack(0,1,1.12);woodenClack(.21,1.15,1.27);return;
+ }
+ if(kind==='mate'){
+  woodenClack(0,.85,1.05);woodenClack(.17,1,1.16);
+  woodenClack(.34,1.1,1.28);woodenClack(.58,1.34,1.58);return;
+ }
+ // Test alternates a normal placement and a dramatic capture.
+ woodenClack(0,.9,1);woodenClack(.43,1.05,1.18);woodenClack(.53,1.2,1.42);
 }
 function soundForMove(move){
  // Let the final position determine the cue, even for the computer's move.
