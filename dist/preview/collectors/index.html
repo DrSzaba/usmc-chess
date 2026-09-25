@@ -4,7 +4,7 @@
  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
  <title>USMC Chess · Collector's Edition · El Szaba</title>
  <meta name="description" content="Play El Szaba's Marine Corps inspired chess game. Sculpted 3D figures, a polished ceremonial board, and a complete game against a friend or computer.">
- <link rel="stylesheet" href="style.css?v=tyrol-8">
+ <link rel="stylesheet" href="style.css?v=audio-9">
  <script type="importmap">{"imports":{"three":"../../vendor/three.module.js"}}</script>
 </head>
 <body>
@@ -27,12 +27,12 @@
    <div class="teams"><span><i class="white-dot"></i> Dress whites</span><span><i class="blue-dot"></i> Dress blues</span></div>
    <label for="mode">Play against</label><select id="mode"><option value="cpu">Computer · casual</option><option value="local">A friend · same device</option></select>
    <label for="promotion">Pawn promotion</label><select id="promotion"><option value="q">Queen · Colonel</option><option value="r">Rook · Gunnery Sergeant</option><option value="b">Bishop · Staff Sergeant</option><option value="n">Knight · Corporal</option></select>
-   <div class="buttons"><button id="new">New game</button><button id="undo">Undo move</button><button id="flip">Switch sides</button><button id="sound" aria-pressed="true">Sound on</button></div>
+   <div class="buttons"><button id="new">New game</button><button id="undo">Undo move</button><button id="flip">Switch sides</button><button id="sound" aria-pressed="true">Sound on</button><button id="sound-test" type="button">▶ Test sound</button><span id="sound-state" role="status" aria-live="polite" style="grid-column:1 / -1;color:#b8c4d1;font-size:11px">Click Test sound to check audio.</span></div>
    <div class="history-title">MOVE RECORD <span id="count">0 half-moves</span></div><ol id="history" aria-label="Move history"></ol>
    <div class="secondary"><button id="view">Use 2D board</button></div>
    <details><summary>The pieces &amp; their ranks</summary><dl><div><dt>Pawn</dt><dd>Lance Corporal</dd></div><div><dt>Knight · Horse</dt><dd>Sergeant</dd></div><div><dt>Bishop</dt><dd>Second Lieutenant</dd></div><div><dt>Rook · Tank</dt><dd>Master Sergeant</dd></div><div><dt>Queen</dt><dd>Colonel</dd></div><div><dt>King</dt><dd>Four-Star General</dd></div></dl><p>Rank assignments are part of this game's theme. Each figure is modeled in three dimensions, including its back and sides. The horses carry mounted Sergeants.</p><a href="../../reference.png" target="_blank" rel="noopener">View the design reference ↗</a></details>
   </aside>
  </main>
  <footer><span class="signature">EL <b>♛</b>SZABA</span><span>SEMPER FIDELIS</span><small>Independent fan project. Not affiliated with or endorsed by the U.S. Marine Corps.</small></footer>
- <script type="module" src="game.js?v=tyrol-8"></script>
+ <script type="module" src="game.js?v=audio-9"></script>
 </body></html>
