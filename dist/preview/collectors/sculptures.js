@@ -30,7 +30,7 @@ export function makeWorkshop(environment) {
   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return add(p,g,m);
  }
  function star(p,r,x,y,z,m=M.goldLight){const s=new T.Shape();for(let i=0;i<10;i++){const a=i*Math.PI/5,rr=i%2?r*.43:r,xx=Math.sin(a)*rr,yy=Math.cos(a)*rr;i?s.lineTo(xx,yy):s.moveTo(xx,yy)}s.closePath();return add(p,new T.ExtrudeGeometry(s,{depth:.008,bevelEnabled:false}),m,x,y,z)}
- function text(p,words,w,h,x,y,z,ry=0){const c=document.createElement('canvas');c.width=1024;c.height=256;const ctx=c.getContext('2d');ctx.fillStyle='#edd29a';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 88px Georgia';ctx.fillText(words,512,128,980);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;const o=add(p,new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}),x,y,z);o.rotation.y=ry;return o}
+ function text(p,words,w,h,x,y,z,ry=0){const c=document.createElement('canvas');c.width=1024;c.height=256;const ctx=c.getContext('2d');ctx.fillStyle='#edd29a';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 174px Georgia';ctx.fillText(words,512,128,980);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;const o=add(p,new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}),x,y,z);o.rotation.y=ry;return o}
  function anchor(p,x,y,z,scale=1){const g=new T.Group();g.position.set(x,y,z);g.scale.setScalar(scale);p.add(g);line(g,[[0,.13,0],[0,.03,0],[0,-.13,0]],.014,M.gold);line(g,[[-.12,-.04,0],[-.10,-.12,0],[0,-.17,0],[.10,-.12,0],[.12,-.04,0]],.012,M.gold);line(g,[[-.085,.07,0],[.085,.07,0]],.012,M.gold);const r=ring(g,.029,.009,M.gold,0,.15,0);r.rotation.x=0;return g}
  function insignia(p,x,y,z,scale=1){const g=new T.Group();g.position.set(x,y,z);g.scale.setScalar(scale);p.add(g);ell(g,0,0,0,.10,.10,.043,M.gold);const rr=ring(g,.10,.008,M.goldLight);rr.rotation.x=0;line(g,[[-.12,.10,0],[-.22,.16,0],[-.07,.12,.01],[0,.16,.025],[.07,.12,.01],[.22,.16,0],[.12,.10,0]],.015,M.gold);anchor(g,.015,-.015,-.015,1.1);return g}
  function bake(group){
@@ -49,10 +49,10 @@ export function makeWorkshop(environment) {
   // Large raised plaques on both sides, mounted beyond the curved pedestal.
   for(const a of [0,Math.PI]){
    const plaque=new T.Group();plaque.rotation.y=a;g.add(plaque);
-   box(plaque,.69,.16,.028,M.black,0,.21,.414);
-   box(plaque,.655,.13,.008,M.gold,0,.21,.432);
-   box(plaque,.62,.105,.008,M.navy,0,.21,.439);
-   text(plaque,rank,.58,.093,0,.21,.447);
+   box(plaque,.74,.20,.028,M.black,0,.21,.414);
+   box(plaque,.70,.17,.008,M.gold,0,.21,.432);
+   box(plaque,.66,.145,.008,M.navy,0,.21,.439);
+   text(plaque,rank,.63,.132,0,.21,.452);
   }
  }
  function face(g,skin,y,female=false){
@@ -125,22 +125,17 @@ export function makeWorkshop(environment) {
   const head=face(body,skin,1.607);
   // Peaked cover with elliptical crown, band, black brim and raised insignia.
   if(type==='b'){
-   // A tall, narrow bishop's mitre replaces the Marine's peaked cap entirely.
-   // Its split silhouette, scarlet band and gold spine are visible at board scale.
-   profile(body,[[1.69,.128,.11],[1.73,.151,.125],[1.78,.133,.105],[1.86,.116,.083],[2.05,.111,.070],[2.28,.099,.055],[2.49,.076,.042],[2.62,.048,.029]],u,48);
-   profile(body,[[1.725,.152,.126],[1.783,.143,.111]],M.red,48);
-   for(const [y,rx,rz] of [[1.73,.152,.126],[1.79,.139,.108],[2.04,.112,.071],[2.47,.08,.046]])ring(body,rx,.010,M.goldLight,0,y).scale.z=rz/rx;
-   for(const sign of [-1,1]){
-    const x=sign*.053;
-    profile(body,[[2.49,.045,.034],[2.57,.044,.03],[2.70,.026,.019],[2.81,.004,.005]],u,28).position.x=x;
-    line(body,[[sign*.123,1.80,.057],[sign*.108,2.09,.062],[sign*.076,2.46,.046],[x,2.78,.012]],.010,M.gold);
-    line(body,[[sign*.10,1.82,-.05],[sign*.095,2.14,-.048],[sign*.063,2.52,-.025]],.005,M.goldLight);
-    ell(body,x,2.805,0,.024,.027,.024,M.goldLight);
-   }
-   line(body,[[0,1.80,.112],[0,2.12,.071],[0,2.45,.045],[0,2.58,.024]],.014,M.goldLight);
-   line(body,[[-.075,2.12,.065],[0,2.19,.071],[.075,2.12,.065]],.009,M.gold);
-   ell(body,0,1.968,.083,.028,.041,.013,M.gold);
-   ell(body,0,1.968,.097,.014,.022,.007,M.gem);
+   // French-inspired military beret: broad, low, tilted and unmistakably
+   // different from the peaked Marine covers.
+   profile(body,[[1.686,.117,.10],[1.706,.145,.124],[1.739,.146,.125]],M.red,48);
+   ring(body,.144,.012,M.goldLight,0,1.727).scale.z=.86;
+   const beret=ell(body,.052,1.79,-.014,.205,.082,.157,u);
+   beret.rotation.z=-.18;
+   ell(body,.066,1.829,-.024,.155,.038,.128,u).rotation.z=-.16;
+   line(body,[[-.121,1.77,.053],[-.055,1.803,.119],[.058,1.811,.127],[.197,1.773,.048]],.009,M.goldLight);
+   ell(body,-.068,1.764,.106,.035,.03,.013,M.gold);
+   insignia(body,-.068,1.764,.123,.15);
+   const tip=ell(body,.080,1.882,-.03,.012,.024,.012,M.goldLight);
   }else{
    const crown=profile(body,[[1.704,.117,.10],[1.719,.146,.129],[1.752,.15,.132],[1.777,.129,.115],[1.786,0,0]],u,48);
    profile(body,[[1.685,.12,.101],[1.718,.124,.105]],M.black,40);
@@ -173,7 +168,7 @@ export function makeWorkshop(environment) {
   }
   for(const y of [1.398,1.417,1.439])line(body,[[-.055,y,.058],[0,y,.071],[.055,y,.058]],.0025,M.goldLight);
   // The bishop's taller hat is balanced by a slightly shorter coat, not an oversized base.
-  const scale=type==='k'?1.10:type==='b'?1.13:.95;
+  const scale=type==='k'?1.10:type==='b'?.98:.95;
   body.position.y=.38*(1-scale);body.scale.y=scale;
  }
  function queen(g,color){
@@ -203,12 +198,23 @@ export function makeWorkshop(environment) {
   // Colonel's raised eagle pin beneath the queen's neckline.
   line(g,[[-.09,1.405,.11],[-.04,1.434,.13],[0,1.412,.139],[.04,1.434,.13],[.09,1.405,.11]],.011,M.goldLight);
   ell(g,0,1.405,.141,.017,.025,.009,M.gold);
-  // Front and rear rank plaques are mounted high on the gown for visibility.
+  // A raised full-bird colonel eagle on front and rear, with sculpted
+  // wings, layered feathers, head, beak, tail, and talons. Rank text stays
+  // on the pedestal tag.
   for(const a of [0,Math.PI]){
-   const badge=new T.Group();badge.rotation.y=a;g.add(badge);
-   box(badge,.37,.17,.018,M.gold,0,1.04,.23);
-   box(badge,.34,.14,.009,M.navy,0,1.04,.243);
-   text(badge,'COL',.31,.115,0,1.04,.25);
+   const eagle=new T.Group();eagle.rotation.y=a;g.add(eagle);
+   box(eagle,.42,.24,.018,M.navy,0,1.035,.235);
+   box(eagle,.40,.22,.008,M.gold,0,1.035,.249);
+   box(eagle,.37,.19,.008,M.navy,0,1.035,.256);
+   ell(eagle,0,1.046,.275,.029,.055,.012,M.goldLight);
+   ell(eagle,.015,1.11,.274,.025,.025,.014,M.goldLight);
+   const beak=ell(eagle,.046,1.104,.276,.022,.008,.008,M.gold);
+   for(const sign of [-1,1]){
+    line(eagle,[[0,1.075,.278],[sign*.08,1.112,.28],[sign*.18,1.094,.278]],.014,M.goldLight);
+    for(let j=0;j<4;j++)line(eagle,[[sign*(.052+j*.03),1.108-j*.004,.281],[sign*(.089+j*.029),1.025-j*.014,.281]],.008,M.gold);
+    line(eagle,[[sign*.014,1.015,.28],[sign*.046,.979,.28],[sign*.061,.971,.28]],.007,M.goldLight);
+   }
+   for(let j=-2;j<=2;j++)line(eagle,[[j*.006,1.014,.279],[j*.018,.967,.279]],.007,M.goldLight);
   }
   // Three concentric embroidered hems, pendant stones and raised filigree.
   for(const [y,r] of [[.49,.311],[.57,.295],[.86,.23]])ring(g,r,.004,M.goldLight,0,y).scale.z=.94;
@@ -330,16 +336,13 @@ export function makeWorkshop(environment) {
    ell(g,sign*.196,1.008,.005,.023,.014,.023,M.red);
   }
   insignia(g,0,.627,.357,.34);
-  // Master Sergeant labels sit on the armor as well as the pedestal.
+  // Armor stays free of lettering; MSGT is displayed on the base tag.
   for(const sign of [-1,1]){
    const plate=new T.Group();plate.rotation.y=sign*Math.PI/2;g.add(plate);
-   box(plate,.38,.13,.018,M.black,0,.613,.39);
-   box(plate,.35,.11,.007,M.gold,0,.613,.402);
-   box(plate,.33,.092,.006,M.navy,0,.613,.409);
-   text(plate,'MSGT',.30,.078,0,.613,.415);
+   box(plate,.32,.13,.018,M.black,0,.613,.39);
+   for(let j=0;j<3;j++)line(plate,[[-.11,.64-j*.022,.402],[0,.615-j*.022,.402],[.11,.64-j*.022,.402]],.008,M.goldLight);
+   for(let j=0;j<3;j++)line(plate,[[-.09,.54+j*.018,.402],[0,.565+j*.018,.402],[.09,.54+j*.018,.402]],.006,M.gold);
   }
-  box(g,.33,.10,.018,M.black,0,.745,-.369);
-  text(g,'MSGT',.30,.077,0,.745,-.381,Math.PI);
  }
  function piece(type,color){const raw=new T.Group();base(raw,type);if(type==='r')tank(raw,color);else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,sculpture:true};return out}
  return {M,material,add,ell,box,cyl,ring,line,profile,star,text,insignia,bake,piece};
