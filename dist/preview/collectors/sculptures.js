@@ -109,19 +109,22 @@ export function makeWorkshop(environment) {
   const head=face(body,skin,1.607);
   // Peaked cover with elliptical crown, band, black brim and raised insignia.
   if(type==='b'){
-   // The bishop alone wears a slim, soaring ceremonial mitre. The narrow
-   // silhouette, tapered crest and vertical gold slit remain legible from afar.
-   profile(body,[[1.696,.128,.112],[1.722,.137,.119],[1.744,.118,.103],[1.82,.108,.086],[1.98,.082,.065],[2.15,.047,.039],[2.24,.012,.014],[2.255,0,0]],u,48);
-   for(const [y,rx,rz] of [[1.71,.137,.119],[1.751,.116,.101],[1.96,.085,.068]])ring(body,rx,.008,M.goldLight,0,y).scale.z=rz/rx;
-   for(const sign of [-1,1])line(body,[[sign*.106,1.75,.054],[sign*.087,1.91,.055],[sign*.047,2.12,.034],[0,2.248,.005]],.006,M.gold);
-   line(body,[[0,1.756,.109],[0,1.97,.073],[0,2.23,.012]],.009,M.goldLight);
-   ell(body,0,1.858,.095,.026,.038,.012,M.gold);
-   ell(body,0,1.858,.108,.011,.016,.006,M.gem);
-   const crest=ell(body,0,2.257,0,.021,.026,.021,M.goldLight);
+   // A tall, narrow bishop's mitre replaces the Marine's peaked cap entirely.
+   // Its split silhouette, scarlet band and gold spine are visible at board scale.
+   profile(body,[[1.69,.128,.11],[1.73,.151,.125],[1.78,.133,.105],[1.86,.116,.083],[2.05,.111,.070],[2.28,.099,.055],[2.49,.076,.042],[2.62,.048,.029]],u,48);
+   profile(body,[[1.725,.152,.126],[1.783,.143,.111]],M.red,48);
+   for(const [y,rx,rz] of [[1.73,.152,.126],[1.79,.139,.108],[2.04,.112,.071],[2.47,.08,.046]])ring(body,rx,.010,M.goldLight,0,y).scale.z=rz/rx;
    for(const sign of [-1,1]){
-    line(body,[[sign*.127,1.725,0],[sign*.129,1.70,.083],[sign*.10,1.68,.105]],.007,M.gold);
-    line(body,[[sign*.107,1.746,-.04],[sign*.08,1.90,-.045],[sign*.026,2.18,-.014]],.004,M.goldLight);
+    const x=sign*.053;
+    profile(body,[[2.49,.045,.034],[2.57,.044,.03],[2.70,.026,.019],[2.81,.004,.005]],u,28).position.x=x;
+    line(body,[[sign*.123,1.80,.057],[sign*.108,2.09,.062],[sign*.076,2.46,.046],[x,2.78,.012]],.010,M.gold);
+    line(body,[[sign*.10,1.82,-.05],[sign*.095,2.14,-.048],[sign*.063,2.52,-.025]],.005,M.goldLight);
+    ell(body,x,2.805,0,.024,.027,.024,M.goldLight);
    }
+   line(body,[[0,1.80,.112],[0,2.12,.071],[0,2.45,.045],[0,2.58,.024]],.014,M.goldLight);
+   line(body,[[-.075,2.12,.065],[0,2.19,.071],[.075,2.12,.065]],.009,M.gold);
+   ell(body,0,1.968,.083,.028,.041,.013,M.gold);
+   ell(body,0,1.968,.097,.014,.022,.007,M.gem);
   }else{
    const crown=profile(body,[[1.704,.117,.10],[1.719,.146,.129],[1.752,.15,.132],[1.777,.129,.115],[1.786,0,0]],u,48);
    profile(body,[[1.685,.12,.101],[1.718,.124,.105]],M.black,40);
@@ -154,7 +157,7 @@ export function makeWorkshop(environment) {
   }
   for(const y of [1.398,1.417,1.439])line(body,[[-.055,y,.058],[0,y,.071],[.055,y,.058]],.0025,M.goldLight);
   // The bishop's taller hat is balanced by a slightly shorter coat, not an oversized base.
-  const scale=type==='k'?1.10:type==='b'?.98:.95;
+  const scale=type==='k'?1.10:type==='b'?1.13:.95;
   body.position.y=.38*(1-scale);body.scale.y=scale;
  }
  function queen(g,color){
