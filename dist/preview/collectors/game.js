@@ -4,16 +4,42 @@ const names={p:'Pawn',r:'Rook',n:'Knight',b:'Bishop',q:'Queen',k:'King'},ranks={
 let selected=null, flipped=false, flat=false, busy=false, timer=null, redraw3D=()=>{}, cameraReset=()=>{};
 let audioContext=null,soundEnabled=true;
 document.getElementById('sound').onclick=()=>{soundEnabled=!soundEnabled;document.getElementById('sound').textContent=soundEnabled?'Sound on':'Sound off';document.getElementById('sound').setAttribute('aria-pressed',String(soundEnabled))};
-function playMoveSound(capture=false){
+function playCue(kind){
  if(!soundEnabled)return;
  try{
   audioContext??=new (window.AudioContext||window.webkitAudioContext)();
   if(audioContext.state==='suspended')audioContext.resume();
-  const now=audioContext.currentTime,master=audioContext.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.23,now+.008);master.gain.exponentialRampToValueAtTime(.0001,now+(capture?.38:.22));master.connect(audioContext.destination);
-  const knock=(freq,start,duration,volume)=>{const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='triangle';osc.frequency.setValueAtTime(freq,now+start);osc.frequency.exponentialRampToValueAtTime(freq*.46,now+start+duration);gain.gain.setValueAtTime(volume,now+start);gain.gain.exponentialRampToValueAtTime(.0001,now+start+duration);osc.connect(gain).connect(master);osc.start(now+start);osc.stop(now+start+duration)};
-  knock(capture?165:245,0,.12,1);knock(capture?92:138,.045,capture?.26:.15,.72);
-  if(capture)knock(62,.11,.25,.7);
+  const ctx=audioContext,now=ctx.currentTime;
+  const tone=(freq,at,duration,level=.10,wave='triangle')=>{
+   const osc=ctx.createOscillator(),gain=ctx.createGain();
+   osc.type=wave;osc.frequency.setValueAtTime(freq,now+at);
+   gain.gain.setValueAtTime(.0001,now+at);
+   gain.gain.exponentialRampToValueAtTime(level,now+at+.008);
+   gain.gain.exponentialRampToValueAtTime(.0001,now+at+duration);
+   osc.connect(gain).connect(ctx.destination);
+   osc.start(now+at);osc.stop(now+at+duration+.012);
+  };
+  if(kind==='select'){tone(420,0,.055,.034);return}
+  if(kind==='move'){
+   tone(215,0,.11,.09);tone(115,.045,.13,.052);return;
+  }
+  if(kind==='capture'){
+   tone(145,0,.16,.14,'sawtooth');tone(86,.065,.26,.09);tone(390,.10,.09,.026);return;
+  }
+  if(kind==='check'){
+   tone(220,0,.16,.09,'sawtooth');tone(330,.13,.20,.11,'sawtooth');tone(440,.26,.27,.10);return;
+  }
+  if(kind==='mate'){
+   tone(196,0,.35,.11,'sawtooth');
+   tone(294,.22,.42,.11);tone(392,.42,.53,.12);tone(588,.68,.72,.12);
+  }
  }catch(e){console.warn('Sound unavailable',e)}
+}
+function soundForMove(move){
+ // Let the final position determine the cue, even for the computer's move.
+ if(game.isCheckmate())playCue('mate');
+ else if(game.isCheck())playCue('check');
+ else playCue(move.captured?'capture':'move');
 }
 const square=(r,c)=>'abcdefgh'[c]+(8-r);
 function legal(){return selected?game.moves({square:selected,verbose:true}):[]}
@@ -21,9 +47,9 @@ function choose(s){
  if(busy||game.isGameOver())return;
  const p=game.get(s),moves=legal();
  if(selected&&moves.some(m=>m.to===s)){
-  const move=moves.find(m=>m.to===s);game.move({from:selected,to:s,promotion:$('promotion').value});playMoveSound(Boolean(move.captured));selected=null;render();scheduleCPU();return;
+  const move=moves.find(m=>m.to===s);game.move({from:selected,to:s,promotion:$('promotion').value});soundForMove(move);selected=null;render();scheduleCPU();return;
  }
- selected=p&&p.color===game.turn()?(s===selected?null:s):null;render();
+ selected=p&&p.color===game.turn()?(s===selected?null:s):null;if(selected)playCue('select');render();
 }
 function render(){
  const team=game.turn()==='w'?'White':'Dress blues';
@@ -38,7 +64,7 @@ function render(){
 const values={p:100,n:320,b:330,r:500,q:900,k:0};
 function evaluate(){if(game.isCheckmate())return game.turn()==='w'?100000:-100000;if(game.isDraw())return 0;let n=0;game.board().forEach((row,r)=>row.forEach((p,c)=>{if(p)n+=(p.color==='b'?1:-1)*(values[p.type]+(p.type==='p'?(p.color==='b'?r:7-r)*5:0)+(3.5-Math.abs(c-3.5))*2)}));return n}
 function search(depth,a,b){if(!depth||game.isGameOver())return evaluate();const max=game.turn()==='b';let best=max?-Infinity:Infinity;const moves=game.moves({verbose:true}).sort((x,y)=>(values[y.captured]||0)-(values[x.captured]||0));for(const m of moves){game.move(m);const v=search(depth-1,a,b);game.undo();best=max?Math.max(best,v):Math.min(best,v);if(max)a=Math.max(a,best);else b=Math.min(b,best);if(b<=a)break}return best}
-function scheduleCPU(){if($('mode').value!=='cpu'||game.turn()!=='b'||game.isGameOver())return;busy=true;render();timer=setTimeout(()=>{try{let best=-Infinity,move=null;for(const m of game.moves({verbose:true})){game.move(m);const v=search(1,-Infinity,Infinity);game.undo();if(v>best){best=v;move=m}}if(move){game.move(move);playMoveSound(Boolean(move.captured))}}finally{busy=false;timer=null;render()}},420)}
+function scheduleCPU(){if($('mode').value!=='cpu'||game.turn()!=='b'||game.isGameOver())return;busy=true;render();timer=setTimeout(()=>{try{let best=-Infinity,move=null;for(const m of game.moves({verbose:true})){game.move(m);const v=search(1,-Infinity,Infinity);game.undo();if(v>best){best=v;move=m}}if(move){game.move(move);soundForMove(move)}}finally{busy=false;timer=null;render()}},420)}
 function cancel(){clearTimeout(timer);timer=null;busy=false;selected=null}
 function setView(){ $('canvas').hidden=flat;$('flat').hidden=!flat;$('view').textContent=flat?'Use 3D board':'Use 2D board';$('instructions').textContent=flat?'Select a piece, then a highlighted square. Arrow keys navigate the board.':'Select a piece, then a highlighted square. Drag to rotate the 3D board and scroll to zoom.';render() }
 let has3D=false;
@@ -49,7 +75,7 @@ let has3D=false;
  $('flip').onclick=()=>{flipped=!flipped;cameraReset();render()};$('reset-view').onclick=()=>cameraReset();
 render();
 try {
- const { createPresentation } = await import('./presentation.js?v=french-7');
+ const { createPresentation } = await import('./presentation.js?v=tyrol-8');
  const view3D = await createPresentation({ stage: $('stage'), host: $('canvas'), game, choose, legal, selection:()=>selected, isFlat:()=>flat, isFlipped:()=>flipped, ranks, rankMarks });
  redraw3D=view3D.redraw; cameraReset=view3D.reset;
  for (const [id,fn] of Object.entries({'showcase':view3D.showcase,'overhead':view3D.overhead,'zoom-in':()=>view3D.zoom(.82),'zoom-out':()=>view3D.zoom(1.22),'inspect':()=>view3D.inspect(selected)})) $(id).onclick=fn;
