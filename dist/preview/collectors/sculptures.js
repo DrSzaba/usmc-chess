@@ -203,6 +203,13 @@ export function makeWorkshop(environment) {
   // Colonel's raised eagle pin beneath the queen's neckline.
   line(g,[[-.09,1.405,.11],[-.04,1.434,.13],[0,1.412,.139],[.04,1.434,.13],[.09,1.405,.11]],.011,M.goldLight);
   ell(g,0,1.405,.141,.017,.025,.009,M.gold);
+  // Front and rear rank plaques are mounted high on the gown for visibility.
+  for(const a of [0,Math.PI]){
+   const badge=new T.Group();badge.rotation.y=a;g.add(badge);
+   box(badge,.37,.17,.018,M.gold,0,1.04,.23);
+   box(badge,.34,.14,.009,M.navy,0,1.04,.243);
+   text(badge,'COL',.31,.115,0,1.04,.25);
+  }
   // Three concentric embroidered hems, pendant stones and raised filigree.
   for(const [y,r] of [[.49,.311],[.57,.295],[.86,.23]])ring(g,r,.004,M.goldLight,0,y).scale.z=.94;
   for(let j=0;j<18;j++){const a=j*Math.PI/9;ell(g,Math.sin(a)*.306,.487,Math.cos(a)*.285,.009,.018,.009,j%3?M.goldLight:M.gem)}
@@ -247,6 +254,30 @@ export function makeWorkshop(environment) {
   ell(g,0,1.10,-.065,.116,.039,.132,M.gold);
   line(g,[[-.168,1.01,.13],[0,.89,.3],[.168,1.01,.13]],.014,M.gold);
   for(const sign of [-1,1]){const medal=insignia(g,sign*.20,.923,-.07,.21);medal.rotation.y=sign*Math.PI/2;const stirrup=ring(g,.06,.009,M.gold,sign*.222,.84,-.045);stirrup.rotation.x=0;stirrup.rotation.y=Math.PI/2}
+  // Mounted Sergeant: boots straddle the horse; hands hold the reins.
+  const skin=color==='w'?M.skinW:M.skinB;
+  for(const sign of [-1,1]){
+   limb(g,[sign*.09,1.18,-.115],[sign*.22,1.055,.005],.068,.055,u);
+   limb(g,[sign*.22,1.055,.005],[sign*.21,.825,.075],.052,.038,u);
+   ell(g,sign*.21,.807,.09,.055,.047,.095,M.shoe);
+   limb(g,[sign*.145,1.55,-.06],[sign*.205,1.37,.045],.061,.045,u);
+   limb(g,[sign*.205,1.37,.045],[sign*.135,1.23,.16],.045,.031,u);
+   ell(g,sign*.135,1.215,.16,.036,.045,.034,M.white);
+   for(let j=0;j<3;j++)line(g,[[sign*.231,1.48-j*.03,.025],[sign*.238,1.46-j*.03,.065],[sign*.23,1.48-j*.03,.096]],.006,M.goldLight);
+  }
+  profile(g,[[1.16,.10,.08,-.10],[1.24,.16,.095,-.10],[1.39,.155,.10,-.10],[1.52,.16,.10,-.10],[1.61,.115,.07,-.10]],u,36);
+  box(g,.25,.033,.18,M.black,0,1.27,-.10);
+  box(g,.045,.037,.016,M.goldLight,0,1.27,.005);
+  cyl(g,.055,.055,.05,skin,0,1.63,-.10,24);
+  const riderFace=face(g,skin,1.78);
+  riderFace.position.z=-.10;
+  const riderCap=profile(g,[[1.875,.10,.085,-.10],[1.89,.13,.11,-.10],[1.925,.135,.11,-.10],[1.95,.10,.083,-.10],[1.965,0,0,-.10]],u,36);
+  ell(g,0,1.875,.015,.13,.013,.085,M.black);
+  line(g,[[-.08,1.91,-.01],[0,1.91,.025],[.08,1.91,-.01]],.006,M.goldLight);
+  insignia(g,0,1.933,.015,.12);
+  box(g,.17,.09,.018,M.navy,0,1.44,.005);
+  text(g,'SGT',.15,.075,0,1.44,.017);
+  for(const sign of [-1,1])line(g,[[sign*.13,1.22,.16],[sign*.04,1.18,.33],[sign*.085,1.46,.38]],.006,M.gold);
  }
  function tank(g,color){
   const armor=color==='w'?M.ivory:M.navy,trim=color==='w'?M.gold:M.red;
@@ -299,6 +330,16 @@ export function makeWorkshop(environment) {
    ell(g,sign*.196,1.008,.005,.023,.014,.023,M.red);
   }
   insignia(g,0,.627,.357,.34);
+  // Master Sergeant labels sit on the armor as well as the pedestal.
+  for(const sign of [-1,1]){
+   const plate=new T.Group();plate.rotation.y=sign*Math.PI/2;g.add(plate);
+   box(plate,.38,.13,.018,M.black,0,.613,.39);
+   box(plate,.35,.11,.007,M.gold,0,.613,.402);
+   box(plate,.33,.092,.006,M.navy,0,.613,.409);
+   text(plate,'MSGT',.30,.078,0,.613,.415);
+  }
+  box(g,.33,.10,.018,M.black,0,.745,-.369);
+  text(g,'MSGT',.30,.077,0,.745,-.381,Math.PI);
  }
  function piece(type,color){const raw=new T.Group();base(raw,type);if(type==='r')tank(raw,color);else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,sculpture:true};return out}
  return {M,material,add,ell,box,cyl,ring,line,profile,star,text,insignia,bake,piece};
