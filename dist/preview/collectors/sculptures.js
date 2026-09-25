@@ -45,8 +45,15 @@ export function makeWorkshop(environment) {
   for(let i=0;i<10;i++){const a=i*Math.PI/5,s=star(g,.037,Math.sin(a)*.384,.207,Math.cos(a)*.384);s.rotation.y=a}
   for(let j=0;j<20;j++){const a=j*Math.PI/10;ell(g,Math.sin(a)*.418,.302,Math.cos(a)*.418,.008,.008,.008,M.goldLight)}
   ring(g,.347,.004,M.goldLight,0,.368);
-  const rank={p:'PFC',b:'SSGT',n:'CPL',r:'GYSGT',q:'COL',k:'GEN'}[type];
-  for(const a of [0,Math.PI])text(g,rank,.29,.084,Math.sin(a)*.42,.063,Math.cos(a)*.42,a);
+  const rank={p:'LCPL',n:'SGT',r:'MSGT',b:'2LT',q:'COL',k:'4★ GEN'}[type];
+  // Large raised plaques on both sides, mounted beyond the curved pedestal.
+  for(const a of [0,Math.PI]){
+   const plaque=new T.Group();plaque.rotation.y=a;g.add(plaque);
+   box(plaque,.69,.16,.028,M.black,0,.21,.414);
+   box(plaque,.655,.13,.008,M.gold,0,.21,.432);
+   box(plaque,.62,.105,.008,M.navy,0,.21,.439);
+   text(plaque,rank,.58,.093,0,.21,.447);
+  }
  }
  function face(g,skin,y,female=false){
   const head=new T.Group();head.position.y=y;g.add(head);
@@ -59,8 +66,8 @@ export function makeWorkshop(environment) {
    ell(head,sign*.044,.016,.099,.010,.011,.004,M.hair);
    line(head,[[sign*.018,.035,.087],[sign*.044,.041,.093],[sign*.073,.033,.081]],.007,M.hair);
    line(head,[[sign*.015,.022,.09],[sign*.044,.029,.101],[sign*.073,.02,.085]],.004,skin);
-   ell(head,sign*.066,-.032,.072,.029,.029,.024,skin);
-   ell(head,sign*.021,-.049,.105,.013,.009,.013,skin);
+   // Smooth cheeks: avoid separate round pads that looked like spots.
+   ell(head,sign*.021,-.049,.105,.010,.006,.009,skin);
   }
   ell(head,0,-.014,.101,.018,.041,.022,skin);ell(head,0,-.044,.119,.023,.017,.021,skin);
   const lip=skin===M.skinW?M.lipW:M.lipB;
@@ -96,9 +103,18 @@ export function makeWorkshop(environment) {
    const cuff=ring(body,.042,.008,M.gold,sign*.222,.992,.04);cuff.scale.z=.9;
    ell(body,sign*.222,.926,.047,.042,.058,.03,M.white);
    for(let f=0;f<3;f++)line(body,[[sign*.208+f*.009,.933,.074],[sign*.208+f*.009,.903,.072]],.002,u);
-   // Shoulder boards and embroidered rank chevrons.
+   // Distinct sleeve insignia: two chevrons, three chevrons, officer bar,
+   // and four stars for the general. The pedestal gives the full rank.
    box(body,.109,.022,.055,M.gold,sign*.152,1.393,0);
-   for(let j=0;j<(type==='p'?1:3);j++)line(body,[[sign*.276,1.267-j*.025,-.025],[sign*.281,1.245-j*.025,.008],[sign*.272,1.267-j*.025,.044]],.005,M.goldLight);
+   if(type==='p'||type==='n'){
+    for(let j=0;j<(type==='p'?2:3);j++)line(body,[[sign*.276,1.29-j*.031,-.03],[sign*.285,1.266-j*.031,.008],[sign*.276,1.29-j*.031,.046]],.009,M.goldLight);
+    if(type==='n')for(let j=0;j<2;j++)line(body,[[sign*.277,1.16+j*.025,-.025],[sign*.286,1.14+j*.025,.006],[sign*.278,1.16+j*.025,.043]],.006,M.gold);
+   }else if(type==='b'){
+    box(body,.017,.060,.065,M.goldLight,sign*.281,1.255,.005);
+    line(body,[[sign*.292,1.25,-.035],[sign*.292,1.25,.043]],.004,M.black);
+   }else if(type==='k'){
+    for(let j=0;j<4;j++)star(body,.020,sign*.272,1.29-j*.043,.048,M.goldLight).rotation.y=sign*Math.PI/2;
+   }
   }
   // Pockets, nameplate, ribbon racks and suspended miniature medals.
   for(const x of [-.092,.092]){box(body,.083,.057,.011,u,x,1.197,.111);line(body,[[x-.04,1.222,.121],[x,1.212,.127],[x+.04,1.222,.121]],.004,u)}
@@ -147,7 +163,7 @@ export function makeWorkshop(environment) {
    limb(body,[-.27,.995,.06],[-.30,.43,.10],.019,.011,M.black);
    limb(body,[-.268,1.10,.055],[-.27,.995,.06],.014,.014,M.gold);
    line(body,[[-.31,1.01,.06],[-.27,.993,.082],[-.23,1.01,.06]],.009,M.gold);
-   if(type==='k'){for(let j=0;j<4;j++)star(body,.014,-.04+j*.026,1.405,.077);for(let j=0;j<3;j++)ring(body,.019,.004,M.goldLight,.27,1.08+j*.04,.042)}
+   if(type==='k'){for(let j=0;j<4;j++)star(body,.022,-.09+j*.058,1.405,.093);for(let j=0;j<3;j++)ring(body,.019,.004,M.goldLight,.27,1.08+j*.04,.042)}
   }
   // Fine raised seams, collar braid, cuff studs and polished boot caps.
   for(const sign of [-1,1]){
@@ -184,6 +200,9 @@ export function makeWorkshop(environment) {
   ring(g,.12,.011,M.gold,0,1.786).scale.z=.89;
   for(let j=0;j<9;j++){const a=(j-4)*.31,r=.12,h=.06+.028*(1-Math.abs(j-4)/4);line(g,[[Math.sin(a-.12)*r,1.79,Math.cos(a-.12)*r],[Math.sin(a)*r,1.79+h,Math.cos(a)*r],[Math.sin(a+.12)*r,1.79,Math.cos(a+.12)*r]],.007,M.gold);ell(g,Math.sin(a)*r,1.796+h,Math.cos(a)*r,.01,.016,.009,j%2?M.goldLight:M.gem)}
   ell(g,0,1.459,.092,.014,.02,.008,M.gem);
+  // Colonel's raised eagle pin beneath the queen's neckline.
+  line(g,[[-.09,1.405,.11],[-.04,1.434,.13],[0,1.412,.139],[.04,1.434,.13],[.09,1.405,.11]],.011,M.goldLight);
+  ell(g,0,1.405,.141,.017,.025,.009,M.gold);
   // Three concentric embroidered hems, pendant stones and raised filigree.
   for(const [y,r] of [[.49,.311],[.57,.295],[.86,.23]])ring(g,r,.004,M.goldLight,0,y).scale.z=.94;
   for(let j=0;j<18;j++){const a=j*Math.PI/9;ell(g,Math.sin(a)*.306,.487,Math.cos(a)*.285,.009,.018,.009,j%3?M.goldLight:M.gem)}
