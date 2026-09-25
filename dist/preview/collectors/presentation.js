@@ -2,7 +2,7 @@ import * as T from 'three';
 import { OrbitControls } from '../../vendor/OrbitControls.js';
 import { RoomEnvironment } from '../../vendor/RoomEnvironment.js';
 import { Reflector } from '../../vendor/Reflector.js';
-import { makeWorkshop } from './sculptures.js';
+import { makeWorkshop } from './sculptures.js?v=mitre-3';
 
 const CELL=1.15;
 const coords=s=>[(s.charCodeAt(0)-97-3.5)*CELL,(8-Number(s[1])-3.5)*CELL];
