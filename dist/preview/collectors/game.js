@@ -3,37 +3,48 @@ const $=id=>document.getElementById(id), game=new Chess();
 const names={p:'Pawn',r:'Rook',n:'Knight',b:'Bishop',q:'Queen',k:'King'},ranks={p:'Lance Corporal',n:'Sergeant',b:'Second Lieutenant',r:'Master Sergeant',q:'Colonel',k:'Four-Star General'},rankMarks={p:'LCPL',n:'SGT',b:'2LT',r:'MSGT',q:'COL',k:'4★ GEN'},glyph={p:'♟',r:'♜',n:'♞',b:'♝',q:'♛',k:'♚'};
 let selected=null, flipped=false, flat=false, busy=false, timer=null, redraw3D=()=>{}, cameraReset=()=>{};
 let audioContext=null,soundEnabled=true;
-document.getElementById('sound').onclick=()=>{soundEnabled=!soundEnabled;document.getElementById('sound').textContent=soundEnabled?'Sound on':'Sound off';document.getElementById('sound').setAttribute('aria-pressed',String(soundEnabled))};
-function playCue(kind){
- if(!soundEnabled)return;
+const soundButton=$('sound'),testButton=$('sound-test'),soundState=$('sound-state');
+async function unlockAudio(){
  try{
   audioContext??=new (window.AudioContext||window.webkitAudioContext)();
-  if(audioContext.state==='suspended')audioContext.resume();
-  const ctx=audioContext,now=ctx.currentTime;
-  const tone=(freq,at,duration,level=.10,wave='triangle')=>{
-   const osc=ctx.createOscillator(),gain=ctx.createGain();
-   osc.type=wave;osc.frequency.setValueAtTime(freq,now+at);
-   gain.gain.setValueAtTime(.0001,now+at);
-   gain.gain.exponentialRampToValueAtTime(level,now+at+.008);
-   gain.gain.exponentialRampToValueAtTime(.0001,now+at+duration);
-   osc.connect(gain).connect(ctx.destination);
-   osc.start(now+at);osc.stop(now+at+duration+.012);
-  };
-  if(kind==='select'){tone(420,0,.055,.034);return}
-  if(kind==='move'){
-   tone(215,0,.11,.09);tone(115,.045,.13,.052);return;
-  }
-  if(kind==='capture'){
-   tone(145,0,.16,.14,'sawtooth');tone(86,.065,.26,.09);tone(390,.10,.09,.026);return;
-  }
-  if(kind==='check'){
-   tone(220,0,.16,.09,'sawtooth');tone(330,.13,.20,.11,'sawtooth');tone(440,.26,.27,.10);return;
-  }
-  if(kind==='mate'){
-   tone(196,0,.35,.11,'sawtooth');
-   tone(294,.22,.42,.11);tone(392,.42,.53,.12);tone(588,.68,.72,.12);
-  }
- }catch(e){console.warn('Sound unavailable',e)}
+  if(audioContext.state!=='running')await audioContext.resume();
+  if(audioContext.state!=='running')throw Error('Audio is suspended');
+  soundState.textContent='Audio ready';
+  return audioContext;
+ }catch(e){
+  soundState.textContent='Audio blocked. Check this tab and system volume.';
+  console.warn('Audio unavailable',e);
+  return null;
+ }
+}
+document.addEventListener('pointerdown',()=>{if(soundEnabled)unlockAudio()},{once:true});
+soundButton.onclick=async()=>{
+ soundEnabled=!soundEnabled;
+ soundButton.textContent=soundEnabled?'Sound on':'Sound off';
+ soundButton.setAttribute('aria-pressed',String(soundEnabled));
+ soundState.textContent=soundEnabled?'Starting audio…':'Sound muted';
+ if(soundEnabled){await unlockAudio();playCue('test')}
+};
+testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}playCue('test')};
+async function playCue(kind){
+ if(!soundEnabled)return;
+ const ctx=await unlockAudio();if(!ctx)return;
+ const now=ctx.currentTime+.012;
+ const tone=(freq,at,duration,level=.20,wave='triangle')=>{
+  const osc=ctx.createOscillator(),gain=ctx.createGain();
+  osc.type=wave;osc.frequency.setValueAtTime(freq,now+at);
+  gain.gain.setValueAtTime(.0001,now+at);
+  gain.gain.exponentialRampToValueAtTime(level,now+at+.012);
+  gain.gain.exponentialRampToValueAtTime(.0001,now+at+duration);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(now+at);osc.stop(now+at+duration+.015);
+ };
+ if(kind==='test'){tone(523,0,.25,.24);tone(659,.27,.25,.24);tone(784,.54,.35,.25);return}
+ if(kind==='select'){tone(520,0,.09,.12);return}
+ if(kind==='move'){tone(285,0,.15,.22);tone(175,.06,.18,.15);return}
+ if(kind==='capture'){tone(180,0,.24,.24,'sawtooth');tone(100,.07,.3,.20);tone(510,.14,.12,.11);return}
+ if(kind==='check'){tone(260,0,.22,.22,'sawtooth');tone(390,.18,.26,.22);tone(520,.36,.32,.24);return}
+ if(kind==='mate'){tone(196,0,.40,.23,'sawtooth');tone(294,.23,.45,.24);tone(392,.45,.55,.25);tone(588,.70,.75,.24)}
 }
 function soundForMove(move){
  // Let the final position determine the cue, even for the computer's move.
