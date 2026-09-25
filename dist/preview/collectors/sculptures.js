@@ -125,19 +125,26 @@ export function makeWorkshop(environment) {
   const head=face(body,skin,1.607);
   // Peaked cover with elliptical crown, band, black brim and raised insignia.
   if(type==='b'){
-   // French-inspired military beret: broad, low, tilted and unmistakably
-   // different from the peaked Marine covers.
-   profile(body,[[1.686,.117,.10],[1.706,.145,.124],[1.739,.146,.125]],M.red,48);
-   ring(body,.144,.012,M.goldLight,0,1.727).scale.z=.86;
-   const beret=ell(body,.052,1.79,-.014,.205,.082,.157,u);
-   beret.rotation.z=-.18;
-   ell(body,.066,1.829,-.024,.155,.038,.128,u).rotation.z=-.16;
-   line(body,[[-.121,1.77,.053],[-.055,1.803,.119],[.058,1.811,.127],[.197,1.773,.048]],.009,M.goldLight);
-   ell(body,-.068,1.764,.106,.035,.03,.013,M.gold);
-   insignia(body,-.068,1.764,.123,.15);
-   const tip=ell(body,.080,1.882,-.03,.012,.024,.012,M.goldLight);
+   // Gentleman's Tyrolean hat: short tapered crown, pinched top, swept
+   // brim, contrasting band and feather on the wearer's left.
+   const brim=ell(body,0,1.718,.016,.226,.019,.181,u);
+   brim.rotation.z=-.035;
+   line(body,[[-.216,1.724,.03],[-.13,1.739,.151],[0,1.735,.185],[.135,1.738,.151],[.217,1.721,.027]],.008,M.goldLight);
+   profile(body,[[1.725,.138,.116],[1.766,.139,.116],[1.814,.125,.102],[1.91,.109,.086],[1.952,.104,.080]],u,48);
+   profile(body,[[1.772,.141,.118],[1.816,.128,.103]],M.red,48);
+   ring(body,.139,.008,M.goldLight,0,1.784).scale.z=.84;
+   const crownTop=ell(body,0,1.953,-.01,.109,.023,.078,u);
+   for(const sign of [-1,1])line(body,[[sign*.057,1.94,.049],[sign*.032,1.969,.073],[0,1.952,.081]],.006,M.gold);
+   box(body,.046,.038,.012,M.goldLight,-.118,1.794,.094);
+   // Curved feather with a gold quill and narrow green vanes.
+   line(body,[[-.124,1.80,.047],[-.189,1.894,.044],[-.242,2.011,.031],[-.263,2.097,.019]],.007,M.goldLight);
+   for(let j=0;j<7;j++){
+    const y=1.86+j*.034,x=-.164-j*.015;
+    line(body,[[x,y,.04],[x-.052,y+.038,.043]],.013,M.ribbonGreen);
+    line(body,[[x,y,.04],[x+.031,y+.04,.042]],.009,M.ribbonGreen);
+   }
   }else{
-   const crown=profile(body,[[1.704,.117,.10],[1.719,.146,.129],[1.752,.15,.132],[1.777,.129,.115],[1.786,0,0]],u,48);
+  const crown=profile(body,[[1.704,.117,.10],[1.719,.146,.129],[1.752,.15,.132],[1.777,.129,.115],[1.786,0,0]],u,48);
    profile(body,[[1.685,.12,.101],[1.718,.124,.105]],M.black,40);
    const brim=ell(body,0,1.684,.078,.134,.014,.096,M.shoe);
    line(body,[[-.106,1.702,.047],[0,1.696,.107],[.106,1.702,.047]],.006,M.gold);
