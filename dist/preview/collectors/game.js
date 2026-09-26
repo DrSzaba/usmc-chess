@@ -29,7 +29,7 @@ testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textCont
 let woodNoise=null;
 function noiseFor(ctx){
  if(woodNoise&&woodNoise.sampleRate===ctx.sampleRate)return woodNoise;
- const length=Math.ceil(ctx.sampleRate*.35);
+ const length=Math.ceil(ctx.sampleRate*1.2);
  woodNoise=ctx.createBuffer(1,length,ctx.sampleRate);
  const data=woodNoise.getChannelData(0);
  for(let i=0;i<length;i++)data[i]=(Math.random()*2-1);
@@ -70,6 +70,25 @@ async function playCue(kind,piece='p'){
   strike.buffer=noise;filter.type='bandpass';filter.frequency.value=1700;hiss.gain.setValueAtTime(.14*weight,at);hiss.gain.exponentialRampToValueAtTime(.0001,at+.075);
   strike.connect(filter).connect(hiss).connect(ctx.destination);strike.start(at);strike.stop(at+.09);
  }
+ function burst(delay,duration,volume,frequency,q=.7){
+  const at=start+delay,source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+  source.buffer=noise;filter.type='bandpass';filter.frequency.value=frequency;filter.Q.value=q;
+  gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(volume,at+.004);
+  gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+  source.connect(filter).connect(gain).connect(ctx.destination);source.start(at);source.stop(at+duration+.01);
+ }
+ function metal(delay=0,weight=1){
+  const at=start+delay;
+  for(const [frequency,level] of [[780,.042],[1170,.035],[1830,.026],[2510,.014]]){
+   const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.value=frequency;
+   gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(level*weight,at+.003);
+   gain.gain.exponentialRampToValueAtTime(.0001,at+.23);
+   osc.connect(gain).connect(ctx.destination);osc.start(at);osc.stop(at+.24);
+  }
+ }
+ function cannon(delay=0){
+  burst(delay,.14,.45,105,.55);burst(delay+.02,.45,.25,290,.4);drum(delay,.9);
+ }
  function bugle(freq,delay,duration=.18,volume=.22){
   const at=start+delay,osc=ctx.createOscillator(),gain=ctx.createGain(),filter=ctx.createBiquadFilter();
   osc.type='sawtooth';osc.frequency.setValueAtTime(freq*.982,at);osc.frequency.linearRampToValueAtTime(freq,at+.035);
@@ -88,14 +107,21 @@ async function playCue(kind,piece='p'){
  if(kind==='select'){woodenClack(0,.35,.72);return}
  if(kind==='move'){woodenClack(0,.9,1);return}
  if(kind==='capture'){
-  // Each rank has a distinct ceremonial signature after the placement impact.
-  woodenClack(0,.9,1);
-  if(piece==='p'){drum(.12,.8);woodenClack(.28,.7,.8)}                // marching boot and rifle stock
-  else if(piece==='n'){woodenClack(.13,.8,.68);woodenClack(.29,1,.8);bugle(392,.43,.15,.13)} // horse cadence
-  else if(piece==='b'){bugle(392,.13,.17);bugle(523.25,.32,.27)}  // captain's command
-  else if(piece==='r'){drum(.12,1.15);drum(.29,.9);woodenClack(.46,1.05,1.6)} // armored tread
-  else if(piece==='q'){drum(.1,.7);drum(.19,.75);drum(.28,.85);bugle(659.25,.4,.3)} // ceremonial roll
-  else {bugle(392,.12,.15);bugle(523.25,.3,.15);bugle(783.99,.48,.4)} // general's fanfare
+  // Six distinct field and ceremonial effects. Bugle notes belong to checkmate only.
+  if(piece==='p'){
+   woodenClack(0,.7,.7);woodenClack(.09,.9,.68);burst(.19,.085,.23,2400,1.1);metal(.205,.4); // rifle action
+  }else if(piece==='n'){
+   for(const [t,w] of [[0,.85],[.14,.62],[.27,.95],[.43,.75]])woodenClack(t,w,.75); // hoof cadence
+   metal(.5,.55);
+  }else if(piece==='b'){
+   drum(0,.62);drum(.105,.55);drum(.205,.9);woodenClack(.35,1,.85); // captain's snare command
+  }else if(piece==='r'){
+   burst(0,.55,.19,115,.42);woodenClack(.07,1.05,1.55);cannon(.2); // tank tread and cannon
+  }else if(piece==='q'){
+   for(let i=0;i<6;i++)drum(i*.065,.36+i*.11);burst(.49,.32,.13,3900,.6);metal(.5,.7); // parade roll and cymbal
+  }else{
+   drum(0,1.05);drum(.2,.9);drum(.4,1.16);metal(.52,1.1);woodenClack(.68,1.2,1.35); // general's salute
+  }
   return;
  }
  if(kind==='check'){
@@ -129,7 +155,7 @@ function render(){
  $('undo').disabled=game.history().length===0;
  const hist=game.history();$('history').replaceChildren();for(let i=0;i<hist.length;i+=2){const li=document.createElement('li');li.textContent=hist[i].padEnd(9,' ')+(hist[i+1]||'');$('history').append(li)}$('history').scrollTop=$('history').scrollHeight;$('count').textContent=`${hist.length} half-moves`;
  const destinations=new Set(legal().map(m=>m.to)), last=game.history({verbose:true}).at(-1), focus=document.activeElement?.dataset.square;
- $('flat').replaceChildren();for(let i=0;i<64;i++){const r=flipped?7-Math.floor(i/8):Math.floor(i/8),c=flipped?7-i%8:i%8,s=square(r,c),p=game.get(s),b=document.createElement('button');b.className=`sq ${(r+c)%2?'dark':'light'}${s===selected?' selected':''}${destinations.has(s)?' legal':''}${last&&(last.from===s||last.to===s)?' last':''}`;b.dataset.square=s;b.setAttribute('aria-label',`${s}: ${p?`${p.color==='w'?'White':'Dress blue'} ${names[p.type]}`:'empty'}${destinations.has(s)?', legal move':''}`);b.setAttribute('aria-pressed',String(s===selected));if(p){const span=document.createElement('span');span.className=`piece ${p.color}`;span.textContent=glyph[p.type];b.append(span)}const caption=document.createElement('small');caption.textContent=s;b.append(caption);b.onclick=()=>choose(s);b.onkeydown=e=>{const d={ArrowRight:1,ArrowLeft:-1,ArrowDown:8,ArrowUp:-8}[e.key];if(d){e.preventDefault();$('flat').children[Math.max(0,Math.min(63,i+d))].focus()}};$('flat').append(b)}
+ $('flat').replaceChildren();for(let i=0;i<64;i++){const r=flipped?7-Math.floor(i/8):Math.floor(i/8),c=flipped?7-i%8:i%8,s=square(r,c),p=game.get(s),b=document.createElement('button');b.className=`sq ${(r+c)%2?'dark':'light'}${s===selected?' selected':''}${destinations.has(s)?' legal':''}${last&&(last.from===s||last.to===s)?' last':''}`;b.dataset.square=s;b.setAttribute('aria-label',`${s}: ${p?`${p.color==='w'?'White':'Dress blue'} ${names[p.type]}, ${ranks[p.type]}`:'empty'}${destinations.has(s)?', legal move':''}`);b.setAttribute('aria-pressed',String(s===selected));if(p){const span=document.createElement('span');span.className=`piece ${p.color} type-${p.type}`;const silhouette=document.createElement('span');silhouette.className='silhouette';silhouette.textContent=glyph[p.type];const rank=document.createElement('span');rank.className='rank';rank.textContent=rankMarks[p.type];span.append(silhouette,rank);b.append(span)}const caption=document.createElement('small');caption.textContent=s;b.append(caption);b.onclick=()=>choose(s);b.onkeydown=e=>{const d={ArrowRight:1,ArrowLeft:-1,ArrowDown:8,ArrowUp:-8}[e.key];if(d){e.preventDefault();$('flat').children[Math.max(0,Math.min(63,i+d))].focus()}};$('flat').append(b)}
  if(flat&&focus)$('flat').querySelector(`[data-square="${focus}"]`)?.focus();redraw3D();
 }
 const values={p:100,n:320,b:330,r:500,q:900,k:0};
