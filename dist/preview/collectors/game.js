@@ -23,9 +23,9 @@ soundButton.onclick=async()=>{
  soundButton.textContent=soundEnabled?'Sound on':'Sound off';
  soundButton.setAttribute('aria-pressed',String(soundEnabled));
  soundState.textContent=soundEnabled?'Starting audio…':'Sound muted';
- if(soundEnabled){await unlockAudio();playCue('test')}
+ if(soundEnabled){await unlockAudio();playCue('move')}
 };
-testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}playCue('test')};
+testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value;playCue(choice==='mate'?'mate':'capture',choice)};
 let woodNoise=null;
 function noiseFor(ctx){
  if(woodNoise&&woodNoise.sampleRate===ctx.sampleRate)return woodNoise;
@@ -35,7 +35,7 @@ function noiseFor(ctx){
  for(let i=0;i<length;i++)data[i]=(Math.random()*2-1);
  return woodNoise;
 }
-async function playCue(kind){
+async function playCue(kind,piece='p'){
  if(!soundEnabled)return;
  const ctx=await unlockAudio();if(!ctx)return;
  const start=ctx.currentTime+.012,noise=noiseFor(ctx);
@@ -62,29 +62,55 @@ async function playCue(kind){
    osc.start(at);osc.stop(at+decay+.01);
   }
  }
+ function drum(delay=0,weight=1){
+  const at=start+delay,osc=ctx.createOscillator(),tone=ctx.createGain(),strike=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),hiss=ctx.createGain();
+  osc.type='triangle';osc.frequency.setValueAtTime(185,at);osc.frequency.exponentialRampToValueAtTime(76,at+.12);
+  tone.gain.setValueAtTime(.0001,at);tone.gain.exponentialRampToValueAtTime(.22*weight,at+.004);tone.gain.exponentialRampToValueAtTime(.0001,at+.18);
+  osc.connect(tone).connect(ctx.destination);osc.start(at);osc.stop(at+.19);
+  strike.buffer=noise;filter.type='bandpass';filter.frequency.value=1700;hiss.gain.setValueAtTime(.14*weight,at);hiss.gain.exponentialRampToValueAtTime(.0001,at+.075);
+  strike.connect(filter).connect(hiss).connect(ctx.destination);strike.start(at);strike.stop(at+.09);
+ }
+ function bugle(freq,delay,duration=.18,volume=.22){
+  const at=start+delay,osc=ctx.createOscillator(),gain=ctx.createGain(),filter=ctx.createBiquadFilter();
+  osc.type='sawtooth';osc.frequency.setValueAtTime(freq*.982,at);osc.frequency.linearRampToValueAtTime(freq,at+.035);
+  filter.type='lowpass';filter.frequency.setValueAtTime(1150,at);filter.frequency.linearRampToValueAtTime(2600,at+.05);
+  gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(volume,at+.035);gain.gain.setValueAtTime(volume*.84,at+Math.max(.045,duration-.055));gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+  osc.connect(filter).connect(gain).connect(ctx.destination);osc.start(at);osc.stop(at+duration+.015);
+ }
+ function reveille(){
+  // Short bugle arrangement of the opening Reveille call; notes use the bugle's harmonic series.
+  const G=392,C=523.25,E=659.25,highG=783.99;
+  const notes=[[G,0,.16],[C,.18,.16],[E,.36,.17],[highG,.55,.31],[E,.9,.16],[C,1.08,.16],[G,1.26,.26],
+   [C,1.6,.12],[E,1.74,.12],[highG,1.88,.32],[E,2.24,.13],[C,2.39,.13],[G,2.54,.28],
+   [G,2.91,.15],[C,3.08,.15],[E,3.25,.16],[highG,3.43,.49]];
+  notes.forEach(([f,t,d])=>bugle(f,t,d,.19));drum(3.94,.55);
+ }
  if(kind==='select'){woodenClack(0,.35,.72);return}
  if(kind==='move'){woodenClack(0,.9,1);return}
  if(kind==='capture'){
-  woodenClack(0,1.05,1.18);
-  woodenClack(.095,1.2,1.42);
-  woodenClack(.19,.46,.75);
+  // Each rank has a distinct ceremonial signature after the placement impact.
+  woodenClack(0,.9,1);
+  if(piece==='p'){drum(.12,.8);woodenClack(.28,.7,.8)}                // marching boot and rifle stock
+  else if(piece==='n'){woodenClack(.13,.8,.68);woodenClack(.29,1,.8);bugle(392,.43,.15,.13)} // horse cadence
+  else if(piece==='b'){bugle(392,.13,.17);bugle(523.25,.32,.27)}  // captain's command
+  else if(piece==='r'){drum(.12,1.15);drum(.29,.9);woodenClack(.46,1.05,1.6)} // armored tread
+  else if(piece==='q'){drum(.1,.7);drum(.19,.75);drum(.28,.85);bugle(659.25,.4,.3)} // ceremonial roll
+  else {bugle(392,.12,.15);bugle(523.25,.3,.15);bugle(783.99,.48,.4)} // general's fanfare
   return;
  }
  if(kind==='check'){
   woodenClack(0,1,1.12);woodenClack(.21,1.15,1.27);return;
  }
  if(kind==='mate'){
-  woodenClack(0,.85,1.05);woodenClack(.17,1,1.16);
-  woodenClack(.34,1.1,1.28);woodenClack(.58,1.34,1.58);return;
+  woodenClack(0,1,1.25);reveille();return;
  }
- // Test alternates a normal placement and a dramatic capture.
- woodenClack(0,.9,1);woodenClack(.43,1.05,1.18);woodenClack(.53,1.2,1.42);
 }
 function soundForMove(move){
  // Let the final position determine the cue, even for the computer's move.
  if(game.isCheckmate())playCue('mate');
+ else if(move.captured)playCue('capture',move.piece);
  else if(game.isCheck())playCue('check');
- else playCue(move.captured?'capture':'move');
+ else playCue('move');
 }
 const square=(r,c)=>'abcdefgh'[c]+(8-r);
 function legal(){return selected?game.moves({square:selected,verbose:true}):[]}
