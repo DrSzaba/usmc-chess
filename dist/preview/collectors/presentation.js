@@ -2,7 +2,7 @@ import * as T from 'three';
 import { OrbitControls } from '../../vendor/OrbitControls.js';
 import { RoomEnvironment } from '../../vendor/RoomEnvironment.js';
 import { Reflector } from '../../vendor/Reflector.js';
-import { makeWorkshop } from './sculptures.js?v=tyrol-8';
+import { makeWorkshop } from './sculptures.js?v=captain-12';
 
 const CELL=1.15;
 const coords=s=>[(s.charCodeAt(0)-97-3.5)*CELL,(8-Number(s[1])-3.5)*CELL];
@@ -10,7 +10,7 @@ const coords=s=>[(s.charCodeAt(0)-97-3.5)*CELL,(8-Number(s[1])-3.5)*CELL];
 export async function createPresentation(api){
  const {stage,host,game,choose,legal,selection,isFlat,isFlipped}=api;
  const renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
- renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.outputColorSpace=T.SRGBColorSpace;
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2.25));renderer.outputColorSpace=T.SRGBColorSpace;
  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.17;
  renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
  host.append(renderer.domElement);renderer.domElement.setAttribute('aria-label','Rotatable sculpted Marine chessboard');
