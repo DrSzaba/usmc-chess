@@ -12,6 +12,8 @@ export function makeWorkshop(environment) {
   red:material('#a5222b',.05,.38),skinW:material('#603722',0,.51),skinB:material('#d09a75',0,.51),
   hair:material('#21160f',0,.64),shoe:material('#070a0e',.2,.2,{clearcoat:1}),
   white:material('#fff9e9',.02,.48),silver:material('#c5d4dc',.87,.19),
+  trouserRed:material('#bf192c',.08,.34),trouserWhite:material('#f8f5e9',.03,.39),
+  stripeBlue:material('#164c81',.12,.32),stripeWhite:material('#fefbf1',.02,.32),
   ribbonBlue:material('#2379aa',.1,.37),ribbonGreen:material('#22644b',.1,.37),
   lipW:material('#4f2820',0,.52),lipB:material('#a66d58',0,.5),gem:material('#a72237',.35,.2),
  };
@@ -46,6 +48,7 @@ export function makeWorkshop(environment) {
   cyl(g,.352,.352,.025,M.ivory,0,.365);
   for(let i=0;i<10;i++){const a=i*Math.PI/5,s=star(g,.037,Math.sin(a)*.384,.207,Math.cos(a)*.384);s.rotation.y=a}
   for(let j=0;j<20;j++){const a=j*Math.PI/10;ell(g,Math.sin(a)*.418,.302,Math.cos(a)*.418,.008,.008,.008,M.goldLight)}
+  for(let j=0;j<32;j++){const a=j*Math.PI/16;ell(g,Math.sin(a)*.382,.134,Math.cos(a)*.382,.006,.009,.006,j%4?M.gold:M.red)}
   ring(g,.347,.004,M.goldLight,0,.368);
   const rank={p:'LCPL',n:'SGT',r:'MSGT',b:'CAPT',q:'COL',k:'4★ GEN'}[type];
   // Large raised plaques on both sides, mounted beyond the curved pedestal.
@@ -80,14 +83,22 @@ export function makeWorkshop(environment) {
  }
  function marine(g,type,color){
   const u=color==='w'?M.ivory:M.navy,skin=color==='w'?M.skinW:M.skinB;
+  const pants=color==='w'?M.trouserRed:M.trouserWhite;
   const body=new T.Group();g.add(body);const senior=type!=='p';
   // Anatomical proportions: boots, shaped trouser legs, jacket waist and shoulders.
   for(const sign of [-1,1]){
    const x=sign*.094;
    ell(body,x,.409,.043,.077,.055,.145,M.shoe);
-   const leg=profile(body,[[.44,.058,.06],[.53,.055,.057],[.73,.064,.067],[.86,.067,.07],[.97,.079,.083],[1.01,.077,.082]],u,64);leg.position.x=x;
-   line(body,[[x+sign*.061,.46,.013],[x+sign*.065,.71,.005],[x+sign*.077,.96,0]],.008,color==='w'?M.gold:M.red);
-   line(body,[[x,.50,.061],[x,.74,.072],[x,1.00,.085]],.003,u);
+   const leg=profile(body,[[.44,.058,.06],[.53,.055,.057],[.73,.064,.067],[.86,.067,.07],[.97,.079,.083],[1.01,.077,.082]],pants,64);leg.position.x=x;
+   if(color==='w'){
+    line(body,[[x+sign*.059,.46,.01],[x+sign*.063,.71,.005],[x+sign*.076,.96,0]],.009,M.stripeBlue);
+    line(body,[[x+sign*.069,.46,.01],[x+sign*.073,.71,.005],[x+sign*.086,.96,0]],.004,M.stripeWhite);
+   }else{
+    line(body,[[x+sign*.06,.46,.01],[x+sign*.065,.71,.005],[x+sign*.078,.96,0]],.011,M.red);
+    line(body,[[x+sign*.069,.46,.01],[x+sign*.074,.71,.005],[x+sign*.087,.96,0]],.003,M.gold);
+   }
+   line(body,[[x,.50,.061],[x,.74,.072],[x,1.00,.085]],.003,color==='w'?M.red:M.trouserWhite);
+   ring(body,.07,.004,M.goldLight,x,.468);
   }
   profile(body,[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,72);
   cyl(body,.069,.065,.07,skin,0,1.44,0,32);
@@ -179,6 +190,15 @@ export function makeWorkshop(environment) {
    line(body,[[sign*.055,.458,.155],[sign*.094,.449,.167],[sign*.144,.458,.15]],.005,M.gold);
   }
   for(const y of [1.398,1.417,1.439])line(body,[[-.055,y,.058],[0,y,.071],[.055,y,.058]],.0025,M.goldLight);
+  // Raised stitching and fastening are visible from all angles at inspection zoom.
+  for(const sign of [-1,1]){
+   for(let j=0;j<7;j++){
+    const y=1.108+j*.039;
+    line(body,[[sign*.125,y,.113],[sign*.144,y+.009,.108]],.002,M.goldLight);
+   }
+   for(let j=0;j<4;j++)ell(body,sign*.232,1.009+j*.017,.073,.004,.004,.003,M.goldLight);
+   line(body,[[sign*.191,1.34,-.06],[sign*.197,1.25,-.077],[sign*.219,1.13,-.045]],.003,M.gold);
+  }
   // The bishop's taller hat is balanced by a slightly shorter coat, not an oversized base.
   const scale=type==='k'?1.10:type==='b'?.98:.95;
   body.position.y=.38*(1-scale);body.scale.y=scale;
@@ -231,10 +251,13 @@ export function makeWorkshop(environment) {
   // Three concentric embroidered hems, pendant stones and raised filigree.
   for(const [y,r] of [[.49,.311],[.57,.295],[.86,.23]])ring(g,r,.004,M.goldLight,0,y).scale.z=.94;
   for(let j=0;j<18;j++){const a=j*Math.PI/9;ell(g,Math.sin(a)*.306,.487,Math.cos(a)*.285,.009,.018,.009,j%3?M.goldLight:M.gem)}
+  for(let j=0;j<12;j++){const a=j*Math.PI/6;ell(g,Math.sin(a)*.27,.70,Math.cos(a)*.25,.008,.014,.008,j%3?M.goldLight:M.gem)}
+  for(let j=0;j<9;j++)ell(g,-.095+j*.024,1.35,.112,.004,.004,.004,j%2?M.gem:M.goldLight);
   for(const sign of [-1,1])line(g,[[sign*.085,1.36,.104],[sign*.105,1.31,.115],[sign*.07,1.27,.116],[0,1.26,.122]],.005,M.goldLight);
  }
  function horse(g,color){
   const u=color==='w'?M.ivory:M.navy;
+  const pants=color==='w'?M.trouserRed:M.trouserWhite;
   // Four articulated legs, a muscular barrel, haunches, chest and a curved neck.
   ell(g,0,.923,-.018,.197,.22,.325,M.ivory);
   ell(g,0,.92,-.205,.205,.23,.188,M.ivory);
@@ -275,8 +298,10 @@ export function makeWorkshop(environment) {
   // Mounted Sergeant: boots straddle the horse; hands hold the reins.
   const skin=color==='w'?M.skinW:M.skinB;
   for(const sign of [-1,1]){
-   limb(g,[sign*.09,1.18,-.115],[sign*.22,1.055,.005],.068,.055,u);
-   limb(g,[sign*.22,1.055,.005],[sign*.21,.825,.075],.052,.038,u);
+   limb(g,[sign*.09,1.18,-.115],[sign*.22,1.055,.005],.068,.055,pants);
+   limb(g,[sign*.22,1.055,.005],[sign*.21,.825,.075],.052,.038,pants);
+   line(g,[[sign*.133,1.152,-.08],[sign*.234,1.05,.025],[sign*.24,.84,.091]],.007,color==='w'?M.stripeBlue:M.red);
+   if(color==='w')line(g,[[sign*.143,1.15,-.08],[sign*.243,1.05,.027],[sign*.249,.84,.091]],.003,M.stripeWhite);
    ell(g,sign*.21,.807,.09,.055,.047,.095,M.shoe);
    limb(g,[sign*.145,1.55,-.06],[sign*.205,1.37,.045],.061,.045,u);
    limb(g,[sign*.205,1.37,.045],[sign*.135,1.23,.16],.045,.031,u);
@@ -296,6 +321,7 @@ export function makeWorkshop(environment) {
   box(g,.17,.09,.018,M.navy,0,1.44,.005);
   text(g,'SGT',.15,.075,0,1.44,.017);
   for(const sign of [-1,1])line(g,[[sign*.13,1.22,.16],[sign*.04,1.18,.33],[sign*.085,1.46,.38]],.006,M.gold);
+  for(const sign of [-1,1])for(let j=0;j<5;j++)ell(g,sign*.188,1.04-j*.025,-.19,.004,.004,.004,M.goldLight);
  }
  function tank(g,color){
   const armor=color==='w'?M.ivory:M.navy,trim=color==='w'?M.gold:M.red;
@@ -354,6 +380,11 @@ export function makeWorkshop(environment) {
    box(plate,.32,.13,.018,M.black,0,.613,.39);
    for(let j=0;j<3;j++)line(plate,[[-.11,.64-j*.022,.402],[0,.615-j*.022,.402],[.11,.64-j*.022,.402]],.008,M.goldLight);
    for(let j=0;j<3;j++)line(plate,[[-.09,.54+j*.018,.402],[0,.565+j*.018,.402],[.09,.54+j*.018,.402]],.006,M.gold);
+  }
+  for(const sign of [-1,1])for(let j=0;j<7;j++){
+   const z=-.3+j*.1;
+   ell(g,sign*.377,.67,z,.008,.008,.008,M.goldLight);
+   line(g,[[sign*.366,.46,z-.026],[sign*.372,.46,z+.026]],.003,M.silver);
   }
  }
  function piece(type,color){const raw=new T.Group();base(raw,type);if(type==='r')tank(raw,color);else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,sculpture:true};return out}
