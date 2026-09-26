@@ -16,14 +16,16 @@ export function makeWorkshop(environment) {
   lipW:material('#4f2820',0,.52),lipB:material('#a66d58',0,.5),gem:material('#a72237',.35,.2),
  };
  const add=(p,g,m,x=0,y=0,z=0)=>{const o=new T.Mesh(g,m);o.position.set(x,y,z);p.add(o);return o};
- const sphereGeo=new T.SphereGeometry(1,20,14);
+ // Extra tessellation keeps faces, hands, covers and curved uniform details
+ // round when a player uses the close inspection camera.
+ const sphereGeo=new T.SphereGeometry(1,48,32);
  const ell=(p,x,y,z,rx,ry,rz,m)=>{const o=add(p,sphereGeo,m,x,y,z);o.scale.set(rx,ry,rz);return o};
  const box=(p,w,h,d,m,x=0,y=0,z=0)=>add(p,new T.BoxGeometry(w,h,d),m,x,y,z);
- const cyl=(p,rt,rb,h,m,x=0,y=0,z=0,n=40)=>add(p,new T.CylinderGeometry(rt,rb,h,n),m,x,y,z);
- const ring=(p,r,t,m,x=0,y=0,z=0)=>{const o=add(p,new T.TorusGeometry(r,t,7,48),m,x,y,z);o.rotation.x=Math.PI/2;return o};
- function line(p,points,r,m){const curve=new T.CatmullRomCurve3(points.map(a=>new T.Vector3(...a)));return add(p,new T.TubeGeometry(curve,Math.max(8,points.length*5),r,6,false),m)}
- function limb(p,a,b,ra,rb,m){const av=new T.Vector3(...a),bv=new T.Vector3(...b),mid=av.clone().add(bv).multiplyScalar(.5),o=cyl(p,rb,ra,av.distanceTo(bv),m,...mid.toArray(),20);o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),bv.sub(av).normalize());return o}
- function profile(p,rows,m,segments=48,flutes=0){
+ const cyl=(p,rt,rb,h,m,x=0,y=0,z=0,n=64)=>add(p,new T.CylinderGeometry(rt,rb,h,n),m,x,y,z);
+ const ring=(p,r,t,m,x=0,y=0,z=0)=>{const o=add(p,new T.TorusGeometry(r,t,12,72),m,x,y,z);o.rotation.x=Math.PI/2;return o};
+ function line(p,points,r,m){const curve=new T.CatmullRomCurve3(points.map(a=>new T.Vector3(...a)));return add(p,new T.TubeGeometry(curve,Math.max(12,points.length*8),r,10,false),m)}
+ function limb(p,a,b,ra,rb,m){const av=new T.Vector3(...a),bv=new T.Vector3(...b),mid=av.clone().add(bv).multiplyScalar(.5),o=cyl(p,rb,ra,av.distanceTo(bv),m,...mid.toArray(),40);o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),bv.sub(av).normalize());return o}
+ function profile(p,rows,m,segments=72,flutes=0){
   const pos=[],uv=[],idx=[];
   for(let j=0;j<rows.length;j++){const [y,rx,rz,cz=0]=rows[j];for(let i=0;i<=segments;i++){const a=i/segments*Math.PI*2,f=1+Math.cos(a*12)*flutes;pos.push(Math.sin(a)*rx*f,y,Math.cos(a)*rz*f+cz);uv.push(i/segments,j/(rows.length-1));}}
   for(let j=0;j<rows.length-1;j++)for(let i=0;i<segments;i++){const k=j*(segments+1)+i;idx.push(k,k+1,k+segments+1,k+1,k+segments+2,k+segments+1)}
@@ -45,7 +47,7 @@ export function makeWorkshop(environment) {
   for(let i=0;i<10;i++){const a=i*Math.PI/5,s=star(g,.037,Math.sin(a)*.384,.207,Math.cos(a)*.384);s.rotation.y=a}
   for(let j=0;j<20;j++){const a=j*Math.PI/10;ell(g,Math.sin(a)*.418,.302,Math.cos(a)*.418,.008,.008,.008,M.goldLight)}
   ring(g,.347,.004,M.goldLight,0,.368);
-  const rank={p:'LCPL',n:'SGT',r:'MSGT',b:'2LT',q:'COL',k:'4★ GEN'}[type];
+  const rank={p:'LCPL',n:'SGT',r:'MSGT',b:'CAPT',q:'COL',k:'4★ GEN'}[type];
   // Large raised plaques on both sides, mounted beyond the curved pedestal.
   for(const a of [0,Math.PI]){
    const plaque=new T.Group();plaque.rotation.y=a;g.add(plaque);
@@ -57,7 +59,7 @@ export function makeWorkshop(environment) {
  }
  function face(g,skin,y,female=false){
   const head=new T.Group();head.position.y=y;g.add(head);
-  profile(head,[[-.155,0,0,.003],[-.145,.05,.055,.015],[-.12,.087,.078,.014],[-.075,.108,.087,.009],[0,.113,.093,0],[.08,.105,.09,-.005],[.135,.075,.064,-.008],[.154,0,0,-.008]],skin,40);
+  profile(head,[[-.155,0,0,.003],[-.145,.05,.055,.015],[-.12,.087,.078,.014],[-.075,.108,.087,.009],[0,.113,.093,0],[.08,.105,.09,-.005],[.135,.075,.064,-.008],[.154,0,0,-.008]],skin,72);
   ell(head,0,.059,-.044,.109,.105,.064,M.hair);
   // Brow ridges, inset eyes, bridge, nostrils, lips and ears remain dimensional.
   for(const sign of [-1,1]){
@@ -83,11 +85,11 @@ export function makeWorkshop(environment) {
   for(const sign of [-1,1]){
    const x=sign*.094;
    ell(body,x,.409,.043,.077,.055,.145,M.shoe);
-   const leg=profile(body,[[.44,.058,.06],[.53,.055,.057],[.73,.064,.067],[.86,.067,.07],[.97,.079,.083],[1.01,.077,.082]],u,28);leg.position.x=x;
+   const leg=profile(body,[[.44,.058,.06],[.53,.055,.057],[.73,.064,.067],[.86,.067,.07],[.97,.079,.083],[1.01,.077,.082]],u,64);leg.position.x=x;
    line(body,[[x+sign*.061,.46,.013],[x+sign*.065,.71,.005],[x+sign*.077,.96,0]],.008,color==='w'?M.gold:M.red);
    line(body,[[x,.50,.061],[x,.74,.072],[x,1.00,.085]],.003,u);
   }
-  profile(body,[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,40);
+  profile(body,[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,72);
   cyl(body,.069,.065,.07,skin,0,1.44,0,32);
   // Standing collar, red piping, belt and a small raised buckle.
   profile(body,[[1.389,.075,.061],[1.447,.074,.060],[1.452,.07,.058]],u,32);
@@ -110,8 +112,9 @@ export function makeWorkshop(environment) {
     for(let j=0;j<(type==='p'?2:3);j++)line(body,[[sign*.276,1.29-j*.031,-.03],[sign*.285,1.266-j*.031,.008],[sign*.276,1.29-j*.031,.046]],.009,M.goldLight);
     if(type==='n')for(let j=0;j<2;j++)line(body,[[sign*.277,1.16+j*.025,-.025],[sign*.286,1.14+j*.025,.006],[sign*.278,1.16+j*.025,.043]],.006,M.gold);
    }else if(type==='b'){
-    box(body,.017,.060,.065,M.goldLight,sign*.281,1.255,.005);
-    line(body,[[sign*.292,1.25,-.035],[sign*.292,1.25,.043]],.004,M.black);
+    // Captain's paired silver bars on each shoulder, above the red cuff braid.
+    for(const z of [-.029,.029])box(body,.018,.066,.014,M.silver,sign*.283,1.266,z);
+    for(const y of [1.015,1.035])line(body,[[sign*.267,y,-.002],[sign*.274,y,.07]],.006,M.goldLight);
    }else if(type==='k'){
     for(let j=0;j<4;j++)star(body,.020,sign*.272,1.29-j*.043,.048,M.goldLight).rotation.y=sign*Math.PI/2;
    }
@@ -123,7 +126,7 @@ export function makeWorkshop(environment) {
   box(body,.069,.011,.009,M.gold,.095,1.292,.123);
   for(let i=0;i<(senior?3:1);i++){const x=-.118+i*.031;box(body,.015,.027,.007,M.ribbonBlue,x,1.224,.133);ell(body,x,1.202,.137,.014,.017,.005,M.gold)}
   const head=face(body,skin,1.607);
-  // Peaked cover with elliptical crown, band, black brim and raised insignia.
+  // Dimensional headwear, band, brim and raised insignia.
   if(type==='b'){
    // Gentleman's Tyrolean hat: short tapered crown, pinched top, swept
    // brim, contrasting band and feather on the wearer's left.
@@ -136,6 +139,8 @@ export function makeWorkshop(environment) {
    const crownTop=ell(body,0,1.953,-.01,.109,.023,.078,u);
    for(const sign of [-1,1])line(body,[[sign*.057,1.94,.049],[sign*.032,1.969,.073],[0,1.952,.081]],.006,M.gold);
    box(body,.046,.038,.012,M.goldLight,-.118,1.794,.094);
+   // Paired bars identify the Tyrolean-hatted bishop as a Marine captain.
+   for(const x of [-.016,.016])box(body,.012,.035,.009,M.silver,x,1.801,.121);
    // Curved feather with a gold quill and narrow green vanes.
    line(body,[[-.124,1.80,.047],[-.189,1.894,.044],[-.242,2.011,.031],[-.263,2.097,.019]],.007,M.goldLight);
    for(let j=0;j<7;j++){
@@ -151,7 +156,7 @@ export function makeWorkshop(environment) {
    insignia(body,0,1.742,.131,.15);
   }
   if(type==='b'){
-   // A narrow ceremonial stole with embroidered edges distinguishes the bishop's coat.
+   // Ceremonial officer braid follows the captain's tailored coat.
    for(const sign of [-1,1]){
     line(body,[[sign*.058,1.388,.086],[sign*.072,1.29,.126],[sign*.079,1.12,.12],[sign*.085,.99,.096]],.012,M.gold);
     line(body,[[sign*.045,1.382,.09],[sign*.056,1.29,.131],[sign*.063,1.12,.126]],.004,M.goldLight);
