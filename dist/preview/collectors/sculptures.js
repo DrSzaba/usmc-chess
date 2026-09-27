@@ -352,67 +352,69 @@ export function makeWorkshop(environment) {
   for(const sign of [-1,1])for(let j=0;j<5;j++)ell(g,sign*.188,1.04-j*.025,-.19,.004,.004,.004,M.goldLight);
  }
  function tank(g,color){
-  const armor=color==='w'?M.ivory:M.navy,trim=color==='w'?M.gold:M.red;
-  // Low armored rook: its highest finial is below the king and queen.
-  // The pointed prow and cannon face the opposing army with the other pieces.
+  const armor=color==='w'?M.ivory:M.navy,shadow=color==='w'?M.silver:M.black,trim=color==='w'?M.gold:M.goldLight;
+  // Compact armored rook, with a low silhouette and a clear tank profile.
   for(const sign of [-1,1]){
    const x=sign*.285;
-   box(g,.155,.27,.71,M.black,x,.552,0);
-   box(g,.166,.035,.74,M.gold,x,.70,0);
-   for(let j=0;j<5;j++){
-    const z=-.265+j*.132;
-    const wheel=ell(g,sign*.367,.53,z,.018,.068,.068,M.gold);
-    ell(g,sign*.385,.53,z,.008,.029,.029,M.black);
-    ell(g,sign*.394,.53,z,.004,.010,.010,M.goldLight);
+   box(g,.16,.255,.70,M.black,x,.55,0);
+   box(g,.175,.035,.73,shadow,x,.704,0);
+   box(g,.175,.035,.73,shadow,x,.397,0);
+   for(let j=0;j<6;j++){
+    const z=-.29+j*.116;
+    ell(g,sign*.375,.54,z,.018,.059,.059,M.gold);
+    ell(g,sign*.389,.54,z,.008,.032,.032,M.black);
+    ell(g,sign*.398,.54,z,.004,.012,.012,M.goldLight);
    }
-   for(let j=0;j<9;j++)box(g,.174,.025,.078,M.shoe,x,.72,-.305+j*.076);
-   for(let j=0;j<9;j++)box(g,.174,.024,.078,M.shoe,x,.389,-.305+j*.076);
-   line(g,[[x,.7,-.36],[x,.745,-.29],[x,.745,.29],[x,.7,.36]],.009,M.goldLight);
+   for(let j=0;j<11;j++){
+    const z=-.33+j*.066;
+    box(g,.178,.035,.056,M.shoe,x,.736,z);
+    box(g,.178,.035,.056,M.shoe,x,.376,z);
+    box(g,.01,.007,.039,trim,sign*.383,.755,z);
+   }
+   box(g,.025,.13,.47,armor,sign*.20,.65,-.02);
+   for(let j=0;j<5;j++)box(g,.009,.006,.057,trim,sign*.215,.705,-.21+j*.105);
   }
-  // Angled armored hull and a sharp forward glacis.
-  box(g,.57,.24,.66,armor,0,.64,-.025);
-  box(g,.60,.032,.68,M.gold,0,.765,-.025);
-  const prow=new T.Mesh(new T.ConeGeometry(.308,.36,4),armor);
-  prow.rotation.x=Math.PI/2;prow.rotation.y=Math.PI/4;prow.position.set(0,.64,.325);g.add(prow);
-  line(g,[[-.245,.762,.26],[0,.756,.50],[.245,.762,.26]],.012,M.goldLight);
+  // Armored hull, pointed glacis, and inset lamps.
+  box(g,.55,.22,.65,armor,0,.65,-.025);
+  box(g,.57,.027,.67,trim,0,.764,-.025);
+  const prow=new T.Mesh(new T.ConeGeometry(.30,.33,4),armor);
+  prow.rotation.x=Math.PI/2;prow.rotation.y=Math.PI/4;prow.position.set(0,.65,.325);g.add(prow);
+  line(g,[[-.25,.763,.26],[0,.755,.49],[.25,.763,.26]],.011,M.goldLight);
   for(const sign of [-1,1]){
-   box(g,.045,.19,.47,trim,sign*.272,.66,-.075);
-   for(let j=0;j<4;j++)ell(g,sign*.246,.767,-.24+j*.13,.014,.006,.014,M.goldLight);
+   ell(g,sign*.205,.685,.38,.05,.04,.012,M.black);
+   ell(g,sign*.205,.685,.394,.032,.025,.006,M.goldLight);
+   for(let j=0;j<5;j++)ell(g,sign*.265,.766,-.29+j*.145,.008,.007,.008,trim);
   }
-  // Turret, raised hatch, pointed armored cupola and detailed cannon.
-  cyl(g,.235,.265,.13,armor,0,.845,-.075,8);
-  ring(g,.248,.012,M.goldLight,0,.782,-.075);
-  cyl(g,.192,.23,.18,armor,0,.990,-.075,8);
-  cyl(g,.19,.19,.018,M.goldLight,0,1.085,-.075,16);
-  const roof=cyl(g,.014,.195,.18,armor,0,1.18,-.075,6);
-  roof.rotation.y=Math.PI/6;
-  ell(g,0,1.285,-.075,.026,.025,.026,M.goldLight);
-  limb(g,[0,.974,.10],[0,.974,.48],.071,.051,M.black);
-  limb(g,[0,.974,.12],[0,.974,.475],.046,.033,M.gold);
-  const muzzle=cyl(g,.068,.060,.055,M.black,0,.974,.49,20);muzzle.rotation.x=Math.PI/2;
-  const bore=cyl(g,.033,.033,.058,M.goldLight,0,.974,.52,20);bore.rotation.x=Math.PI/2;
-  for(const z of [.16,.27,.39]){const collar=cyl(g,.056,.056,.018,M.goldLight,0,.974,z,20);collar.rotation.x=Math.PI/2}
-  // Raised service panel, sight, hatches and subtle Marine insignia.
-  box(g,.13,.016,.10,M.black,-.09,1.097,-.12);
-  ring(g,.075,.008,M.goldLight,-.09,1.109,-.12);
-  cyl(g,.024,.024,.11,M.black,.115,1.12,-.14);
-  ell(g,.115,1.18,-.14,.024,.018,.024,M.goldLight);
+  // Faceted turret, flush hatch, observation slits, and vented roof.
+  cyl(g,.248,.263,.075,shadow,0,.813,-.08,10);
+  cyl(g,.211,.245,.15,armor,0,.916,-.08,10);
+  cyl(g,.18,.206,.04,armor,0,1.012,-.08,10);
+  ring(g,.212,.011,trim,0,.991,-.08);
+  cyl(g,.09,.09,.012,M.black,-.08,1.04,-.13,24);
+  ring(g,.086,.008,M.goldLight,-.08,1.05,-.13);
   for(const sign of [-1,1]){
-   box(g,.038,.10,.075,M.goldLight,sign*.197,.934,.005);
-   ell(g,sign*.196,1.008,.005,.023,.014,.023,M.red);
+   box(g,.068,.033,.015,M.black,sign*.129,.955,.083);
+   box(g,.048,.008,.017,M.goldLight,sign*.129,.966,.093);
+   for(let j=0;j<4;j++){
+    box(g,.009,.004,.038,M.black,sign*.145,1.034,-.24+j*.047);
+    ell(g,sign*.201,.91,-.18+j*.077,.007,.007,.007,trim);
+   }
   }
-  insignia(g,0,.627,.357,.34);
-  // Armor stays free of lettering; MSGT is displayed on the base tag.
+  // Tapered cannon, recoil jacket, metallic rings, and dark muzzle bore.
+  limb(g,[0,.932,.09],[0,.932,.47],.07,.044,shadow);
+  limb(g,[0,.932,.16],[0,.932,.458],.047,.031,armor);
+  for(const z of [.18,.32,.43]){
+   const collar=cyl(g,.052,.052,.013,trim,0,.932,z,24);collar.rotation.x=Math.PI/2;
+  }
+  const muzzle=cyl(g,.059,.059,.042,M.goldLight,0,.932,.488,24);muzzle.rotation.x=Math.PI/2;
+  const bore=cyl(g,.033,.033,.044,M.black,0,.932,.51,24);bore.rotation.x=Math.PI/2;
+  insignia(g,0,.638,.407,.24);
+  // Master sergeant chevrons are raised on both armor sides and on the base.
   for(const sign of [-1,1]){
    const plate=new T.Group();plate.rotation.y=sign*Math.PI/2;g.add(plate);
-   box(plate,.32,.13,.018,M.black,0,.613,.39);
-   for(let j=0;j<3;j++)line(plate,[[-.11,.64-j*.022,.402],[0,.615-j*.022,.402],[.11,.64-j*.022,.402]],.008,M.goldLight);
-   for(let j=0;j<3;j++)line(plate,[[-.09,.54+j*.018,.402],[0,.565+j*.018,.402],[.09,.54+j*.018,.402]],.006,M.gold);
-  }
-  for(const sign of [-1,1])for(let j=0;j<7;j++){
-   const z=-.3+j*.1;
-   ell(g,sign*.377,.67,z,.008,.008,.008,M.goldLight);
-   line(g,[[sign*.366,.46,z-.026],[sign*.372,.46,z+.026]],.003,M.silver);
+   box(plate,.28,.14,.012,M.black,0,.625,.388);
+   for(let j=0;j<3;j++)line(plate,[[-.105,.65-j*.026,.401],[0,.620-j*.026,.401],[.105,.65-j*.026,.401]],.007,M.goldLight);
+   for(let j=0;j<3;j++)line(plate,[[-.085,.555+j*.016,.401],[0,.579+j*.016,.401],[.085,.555+j*.016,.401]],.005,M.gold);
   }
  }
  function piece(type,color){const raw=new T.Group();base(raw,type);if(type==='r')tank(raw,color);else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,sculpture:true};return out}
