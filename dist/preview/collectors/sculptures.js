@@ -119,15 +119,17 @@ export function makeWorkshop(environment) {
    // Distinct sleeve insignia: one PFC chevron, three sergeant chevrons, officer bars,
    // and four stars for the general. The pedestal gives the full rank.
    box(body,.109,.022,.055,M.gold,sign*.152,1.393,0);
-   if(type==='p'||type==='n'){
-    for(let j=0;j<(type==='p'?1:3);j++)line(body,[[sign*.276,1.29-j*.031,-.03],[sign*.285,1.266-j*.031,.008],[sign*.276,1.29-j*.031,.046]],.009,M.goldLight);
-    if(type==='n')for(let j=0;j<2;j++)line(body,[[sign*.277,1.16+j*.025,-.025],[sign*.286,1.14+j*.025,.006],[sign*.278,1.16+j*.025,.043]],.006,M.gold);
+   if(type==='p'){
+    // PFC: single upward chevron; no crossed rifles or rocker.
+    box(body,.009,.105,.112,M.red,sign*.276,1.269,.008);
+    line(body,[[sign*.286,1.239,-.038],[sign*.293,1.285,.008],[sign*.286,1.239,.054]],.011,M.goldLight);
    }else if(type==='b'){
     // Captain's paired silver bars on each shoulder, above the red cuff braid.
     for(const z of [-.029,.029])box(body,.018,.066,.014,M.silver,sign*.283,1.266,z);
+    box(body,.008,.012,.068,M.silver,sign*.295,1.267,0);
     for(const y of [1.015,1.035])line(body,[[sign*.267,y,-.002],[sign*.274,y,.07]],.006,M.goldLight);
    }else if(type==='k'){
-    for(let j=0;j<4;j++)star(body,.020,sign*.272,1.29-j*.043,.048,M.goldLight).rotation.y=sign*Math.PI/2;
+    for(let j=0;j<4;j++)star(body,.020,sign*.272,1.29-j*.043,.048,M.silver).rotation.y=sign*Math.PI/2;
    }
   }
   // Pockets, nameplate, ribbon racks and suspended miniature medals.
@@ -187,7 +189,7 @@ export function makeWorkshop(environment) {
    // The four-star general carries a wider gold shoulder braid, sash and medals.
    for(const sign of [-1,1]){
     box(body,.13,.026,.078,M.goldLight,sign*.158,1.41,.005);
-    for(let j=0;j<4;j++)star(body,.023,sign*.12+(j-1.5)*.028,1.43,.052,M.goldLight);
+    for(let j=0;j<4;j++)star(body,.023,sign*.12+(j-1.5)*.028,1.43,.052,M.silver);
     for(let j=0;j<4;j++)line(body,[[sign*.21,1.38,.02],[sign*(.22+j*.012),1.28,.10],[sign*(.13+j*.011),1.10,.144]],.005,M.goldLight);
    }
    line(body,[[-.16,1.37,.08],[.14,1.04,.17]],.022,M.gold);
@@ -281,25 +283,29 @@ export function makeWorkshop(environment) {
   ell(g,0,1.977,0,.031,.035,.031,M.gem);
   ell(g,0,1.459,.092,.014,.02,.008,M.gem);
   // Colonel's raised eagle pin beneath the queen's neckline.
-  line(g,[[-.09,1.405,.11],[-.04,1.434,.13],[0,1.412,.139],[.04,1.434,.13],[.09,1.405,.11]],.011,M.goldLight);
-  ell(g,0,1.405,.141,.017,.025,.009,M.gold);
+  line(g,[[-.09,1.405,.11],[-.04,1.434,.13],[0,1.412,.139],[.04,1.434,.13],[.09,1.405,.11]],.011,M.silver);
+  ell(g,0,1.405,.141,.017,.025,.009,M.silver);
   // A raised full-bird colonel eagle on front and rear, with sculpted
   // wings, layered feathers, head, beak, tail, and talons. Rank text stays
   // on the pedestal tag.
   for(const a of [0,Math.PI]){
    const eagle=new T.Group();eagle.rotation.y=a;g.add(eagle);
    box(eagle,.42,.24,.018,M.navy,0,1.035,.235);
-   box(eagle,.40,.22,.008,M.gold,0,1.035,.249);
+   box(eagle,.40,.22,.008,M.silver,0,1.035,.249);
    box(eagle,.37,.19,.008,M.navy,0,1.035,.256);
-   ell(eagle,0,1.046,.275,.029,.055,.012,M.goldLight);
-   ell(eagle,.015,1.11,.274,.025,.025,.014,M.goldLight);
-   const beak=ell(eagle,.046,1.104,.276,.022,.008,.008,M.gold);
+   ell(eagle,0,1.046,.275,.029,.055,.012,M.silver);
    for(const sign of [-1,1]){
-    line(eagle,[[0,1.075,.278],[sign*.08,1.112,.28],[sign*.18,1.094,.278]],.014,M.goldLight);
-    for(let j=0;j<4;j++)line(eagle,[[sign*(.052+j*.03),1.108-j*.004,.281],[sign*(.089+j*.029),1.025-j*.014,.281]],.008,M.gold);
-    line(eagle,[[sign*.014,1.015,.28],[sign*.046,.979,.28],[sign*.061,.971,.28]],.007,M.goldLight);
+    const wing=ell(eagle,sign*.105,1.088,.275,.10,.032,.012,M.silver);wing.rotation.z=sign*.13;
+    for(let f=0;f<5;f++)ell(eagle,sign*(.06+f*.027),1.067-f*.011,.284,.015,.039-f*.004,.006,M.silver);
    }
-   for(let j=-2;j<=2;j++)line(eagle,[[j*.006,1.014,.279],[j*.018,.967,.279]],.007,M.goldLight);
+   ell(eagle,.015,1.11,.274,.025,.025,.014,M.silver);
+   const beak=ell(eagle,.046,1.104,.276,.022,.008,.008,M.silver);
+   for(const sign of [-1,1]){
+    line(eagle,[[0,1.075,.278],[sign*.08,1.112,.28],[sign*.18,1.094,.278]],.014,M.silver);
+    for(let j=0;j<4;j++)line(eagle,[[sign*(.052+j*.03),1.108-j*.004,.281],[sign*(.089+j*.029),1.025-j*.014,.281]],.008,M.silver);
+    line(eagle,[[sign*.014,1.015,.28],[sign*.046,.979,.28],[sign*.061,.971,.28]],.007,M.silver);
+   }
+   for(let j=-2;j<=2;j++)line(eagle,[[j*.006,1.014,.279],[j*.018,.967,.279]],.007,M.silver);
   }
   // Three concentric embroidered hems, pendant stones and raised filigree.
   for(const [y,r] of [[.49,.311],[.57,.295],[.86,.23]])ring(g,r,.004,M.goldLight,0,y).scale.z=.94;
@@ -435,12 +441,20 @@ export function makeWorkshop(environment) {
   const muzzle=cyl(g,.059,.059,.042,M.goldLight,0,.932,.488,24);muzzle.rotation.x=Math.PI/2;
   const bore=cyl(g,.033,.033,.044,M.black,0,.932,.51,24);bore.rotation.x=Math.PI/2;
   insignia(g,0,.638,.407,.24);
-  // Master sergeant chevrons are raised on both armor sides and on the base.
+  // Marine Master Sergeant: three upright chevrons, crossed rifles, three rockers.
   for(const sign of [-1,1]){
    const plate=new T.Group();plate.rotation.y=sign*Math.PI/2;g.add(plate);
-   box(plate,.28,.14,.012,M.black,0,.625,.388);
-   for(let j=0;j<3;j++)line(plate,[[-.105,.65-j*.026,.401],[0,.620-j*.026,.401],[.105,.65-j*.026,.401]],.007,M.goldLight);
-   for(let j=0;j<3;j++)line(plate,[[-.085,.555+j*.016,.401],[0,.579+j*.016,.401],[.085,.555+j*.016,.401]],.005,M.gold);
+   box(plate,.30,.235,.014,M.black,0,.623,.389);
+   for(let j=0;j<3;j++){
+    const y=.710-j*.029;
+    line(plate,[[-.113,y-.028,.402],[0,y,.402],[.113,y-.028,.402]],.007,M.goldLight);
+   }
+   line(plate,[[-.077,.576,.404],[.071,.628,.404]],.006,M.goldLight);
+   line(plate,[[.077,.576,.406],[-.071,.628,.406]],.006,M.goldLight);
+   for(let j=0;j<3;j++){
+    const y=.555-j*.018;
+    line(plate,[[-.105,y+.013,.402],[0,y,.402],[.105,y+.013,.402]],.006,M.goldLight);
+   }
   }
  }
  function piece(type,color){const raw=new T.Group();base(raw,type);if(type==='r'){const raised=new T.Group();raw.add(raised);tank(raised,color);raised.scale.y=1.8;raised.position.y=-.365*.8;}else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,sculpture:true};return out}
