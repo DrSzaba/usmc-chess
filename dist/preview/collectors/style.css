@@ -135,10 +135,10 @@ aside .secondary #view {border:1px solid #ad884d;background:linear-gradient(165d
 .flat-mode .sq .piece.type-k:before,.flat-mode .sq .piece.type-q:before {display:none}
 .flat-mode .sq .piece.type-k .silhouette,.flat-mode .sq .piece.type-q .silhouette {width:100%;height:80%;margin:1px 0 0;
  font-size:0;flex:1 1 auto;background-position:center;background-size:contain;background-repeat:no-repeat}
-.flat-mode .sq .piece.type-k.w .silhouette {background-image:url('./general-white.svg')}
-.flat-mode .sq .piece.type-k.b .silhouette {background-image:url('./general-blue.svg')}
-.flat-mode .sq .piece.type-q.w .silhouette {background-image:url('./queen-white.svg')}
-.flat-mode .sq .piece.type-q.b .silhouette {background-image:url('./queen-blue.svg')}
+.flat-mode .sq .piece.type-k.w .silhouette {background-image:url('./general-white.svg?v=regalia-24')}
+.flat-mode .sq .piece.type-k.b .silhouette {background-image:url('./general-blue.svg?v=regalia-24')}
+.flat-mode .sq .piece.type-q.w .silhouette {background-image:url('./queen-white.svg?v=regalia-24')}
+.flat-mode .sq .piece.type-q.b .silhouette {background-image:url('./queen-blue.svg?v=regalia-24')}
 .flat-mode .sq .piece.type-k .rank,.flat-mode .sq .piece.type-q .rank {font-size:clamp(6px,.7vw,9px);line-height:1.2;margin:0 0 2px;
  color:#f7dc9d;background:#102643;border:1px solid #d7ab5f;border-radius:3px;padding:1px 3px}
 .flat-mode .sq .piece.type-k:after,.flat-mode .sq .piece.type-q:after {opacity:.3}
@@ -170,6 +170,6 @@ aside .secondary #view {border:1px solid #ad884d;background:linear-gradient(165d
  border:1px solid #d6ad67;border-radius:8px;background:linear-gradient(125deg,#254966,#10243d);
  box-shadow:inset 0 1px #fff2,0 5px 12px #0005;color:#ffe5a8}
 .portrait-card[hidden]{display:none!important}
-.portrait-card img {width:78px;height:91px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 4px #0007)}
+.portrait-card img {width:106px;height:124px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 4px #0007)}
 .portrait-card strong {display:block;font:700 15px/1.2 Georgia,serif}
 .portrait-card span {display:block;margin-top:6px;color:#d8dce5;font-size:11px}
