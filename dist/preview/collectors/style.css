@@ -97,3 +97,34 @@
 .flat-mode .sq .piece.type-p .silhouette {margin-top:13px}
 .flat-mode .sq .piece .rank {position:relative;z-index:2;letter-spacing:.08em}
 @media(max-width:760px){.flat-mode .flat-nameplate{font-size:8px;letter-spacing:.12em;padding:5px 7px}.flat-mode .flat-motto{font-size:7px;letter-spacing:.1em;margin-top:10px}.flat-nameplate span{padding:0 2px}.flat-mode #flat{margin-top:10px;border-width:6px}.flat-mode .sq .piece.type-p:before{width:14px;height:12px}.flat-mode .sq .piece.type-p .silhouette{margin-top:8px}}
+
+/* Crossed-rifle USMC plaques sit beyond the board's existing EGA medallions. */
+.flat-ornament {display:none;position:absolute;top:24%;width:75px;height:146px;z-index:2;pointer-events:none;
+ border:3px double #e2b768;border-radius:38px 38px 10px 10px;
+ background:url('./rifles.svg') center 14px/64px 92px no-repeat,linear-gradient(145deg,#24486c,#091a30 72%);
+ box-shadow:0 9px 18px #171a2599,inset 0 0 0 3px #69272b,inset 0 0 0 5px #f4d58c;
+ color:#f8dc9b;text-align:center}
+.flat-ornament span {position:absolute;bottom:10px;left:0;right:0;font:700 12px/1 Georgia,serif;letter-spacing:.17em;text-shadow:0 1px 2px #000}
+.flat-mode .flat-ornament {display:block}.flat-ornament.left{left:4%}.flat-ornament.right{right:4%}
+@media(max-width:1050px){.flat-ornament.left{left:1%}.flat-ornament.right{right:1%}.flat-ornament{width:55px;height:110px;background-size:45px 68px}.flat-ornament span{font-size:9px;bottom:7px}}
+@media(max-width:760px){.flat-mode .flat-ornament{display:none}}
+
+/* Polished side panel controls, with clear focus and disabled states. */
+aside {background:linear-gradient(160deg,#111f34,#0b1423 85%);border:1px solid #4e4650;border-top:3px solid #c9a365;
+ border-radius:8px;padding:19px 18px 16px;box-shadow:0 12px 28px #0005,inset 0 1px #fff2}
+aside button,aside select {border:1px solid #ad884d;border-radius:7px;
+ background:linear-gradient(165deg,#294364 0%,#162b48 50%,#101d32 100%);color:#fff7e8;
+ box-shadow:inset 0 1px #fff2,0 3px 7px #0006;transition:filter .15s,transform .15s,box-shadow .15s}
+aside button:hover:not(:disabled),aside select:hover:not(:disabled){filter:brightness(1.18);transform:translateY(-1px);box-shadow:inset 0 1px #fff3,0 5px 12px #0008}
+aside button:active:not(:disabled){transform:translateY(1px)}
+aside button:focus-visible,aside select:focus-visible,aside input:focus-visible,aside summary:focus-visible{outline:3px solid #f6d98a;outline-offset:2px}
+aside button:disabled,aside select:disabled{opacity:.48;filter:saturate(.55);box-shadow:none}
+aside .buttons #new {background:linear-gradient(145deg,#fff1bd,#d9b468 55%,#ad7e38);color:#162238;border-color:#f3d48b;box-shadow:inset 0 1px #fff8,0 4px 11px #0006}
+aside #sound[aria-pressed=true] {border-color:#eed49a;box-shadow:inset 0 0 0 1px #eed49a66,0 3px 9px #0007}
+aside .buttons {margin-bottom:22px}
+.volume-label,.sound-preview-label,#sound-preview,#sound-action,#sound-state {grid-column:1 / -1}
+.volume-label {display:flex;justify-content:space-between;margin:6px 0 0;color:#e6cd92;font-weight:700}
+.volume-label output{color:#f9e2a5}#volume{grid-column:1 / -1;width:100%;margin:1px 0 5px;accent-color:#d7af64;cursor:pointer}
+.sound-preview-label{margin:5px 0 0}#sound-state{color:#c2cbd8;font-size:11px;min-height:22px}
+aside .secondary #view {border:1px solid #ad884d;background:linear-gradient(165deg,#294364,#101d32);color:#fff7e8}
+@media(max-width:760px){aside{padding:16px 14px}}
