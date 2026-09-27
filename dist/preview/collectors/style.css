@@ -128,3 +128,41 @@ aside .buttons {margin-bottom:22px}
 .sound-preview-label{margin:5px 0 0}#sound-state{color:#c2cbd8;font-size:11px;min-height:22px}
 aside .secondary #view {border:1px solid #ad884d;background:linear-gradient(165deg,#294364,#101d32);color:#fff7e8}
 @media(max-width:760px){aside{padding:16px 14px}}
+
+/* Portrait medallions distinguish the four-star General and the Colonel Queen. */
+.flat-mode .sq .piece.type-k,.flat-mode .sq .piece.type-q {width:92%;height:94%;max-width:none;max-height:none;border-radius:34% 34% 22% 22%;
+ border:2px solid #f5d88c;box-shadow:0 4px 7px #000c,inset 0 0 0 2px #fff9d0,0 0 0 1px #7b3140}
+.flat-mode .sq .piece.type-k:before,.flat-mode .sq .piece.type-q:before {display:none}
+.flat-mode .sq .piece.type-k .silhouette,.flat-mode .sq .piece.type-q .silhouette {width:100%;height:80%;margin:1px 0 0;
+ font-size:0;flex:1 1 auto;background-position:center;background-size:contain;background-repeat:no-repeat}
+.flat-mode .sq .piece.type-k.w .silhouette {background-image:url('./general-white.svg')}
+.flat-mode .sq .piece.type-k.b .silhouette {background-image:url('./general-blue.svg')}
+.flat-mode .sq .piece.type-q.w .silhouette {background-image:url('./queen-white.svg')}
+.flat-mode .sq .piece.type-q.b .silhouette {background-image:url('./queen-blue.svg')}
+.flat-mode .sq .piece.type-k .rank,.flat-mode .sq .piece.type-q .rank {font-size:clamp(6px,.7vw,9px);line-height:1.2;margin:0 0 2px;
+ color:#f7dc9d;background:#102643;border:1px solid #d7ab5f;border-radius:3px;padding:1px 3px}
+.flat-mode .sq .piece.type-k:after,.flat-mode .sq .piece.type-q:after {opacity:.3}
+
+/* A brighter ceremonial gallery surrounds the playable squares. */
+#stage.flat-mode {background:radial-gradient(circle at center,#f1e3c3 0%,#d5cfb8 53%,#b7c7c3 100%)}
+.flat-mode #flat {border-color:#edcd7e;
+ box-shadow:0 20px 32px #1417208c,0 0 0 3px #a51f36,0 0 0 7px #fff5d6,0 0 0 11px #184d7c,0 0 0 15px #e7be65,
+ inset 0 0 0 2px #fff4c7,inset 0 0 0 7px #9c2636,inset 0 0 0 10px #edc876}
+.flat-mode #flat::before,.flat-mode #flat::after {border-color:#ffe092;
+ background-image:url('./ega.svg'),linear-gradient(150deg,#238263,#195789 48%,#931f3e);
+ box-shadow:0 8px 14px #0009,inset 0 0 0 2px #fff5c5,inset 0 0 0 5px #9c2038,0 0 0 2px #104573}
+.flat-armor {display:none;position:absolute;top:71%;width:86px;height:82px;z-index:2;pointer-events:none;
+ background:url('./tank.svg') center 10px/76px 54px no-repeat,linear-gradient(145deg,#a22137 0%,#19436b 49%,#267355 100%);
+ border:3px solid #f3d280;border-radius:10px 10px 22px 22px;
+ box-shadow:0 8px 15px #0008,inset 0 0 0 2px #f8efd2,inset 0 0 0 5px #132f52}
+.flat-armor.left {left:3%}.flat-armor.right{right:3%}
+.flat-mode .flat-armor {display:block}
+.flat-mode .flat-ornament {background-image:url('./rifles.svg'),linear-gradient(145deg,#af273f 0%,#164e7d 55%,#216948 100%)}
+.flat-mode .flat-nameplate,.flat-mode .flat-motto {background:linear-gradient(95deg,#9e2638,#173d6a 32%,#236c53 68%,#9e2638)}
+#board-tone {grid-column:1 / -1}
+@media(max-width:1050px){.flat-armor{width:55px;height:59px;background-size:48px 40px;background-position:center 8px}.flat-armor.left{left:1%}.flat-armor.right{right:1%}}
+@media(max-width:760px){.flat-mode .flat-armor{display:block;width:26px;height:34px;top:77%;border-width:1px;border-radius:4px;
+ background-size:25px 18px;background-position:center 5px;box-shadow:0 2px 5px #0007,inset 0 0 0 1px #f8efd2}
+ .flat-armor.left{left:1px}.flat-armor.right{right:1px}
+ .flat-mode .sq .piece.type-k .rank,.flat-mode .sq .piece.type-q .rank {font-size:5px;padding:0 1px}
+}
