@@ -6,7 +6,38 @@ function sizeFlatBoard(){const stage=$('stage'),sideSpace=stage.clientWidth<650?
 new ResizeObserver(sizeFlatBoard).observe($('stage'));sizeFlatBoard();
 let audioContext=null,soundEnabled=true;
 const soundButton=$('sound'),testButton=$('sound-test'),soundState=$('sound-state');
-const soundNames={p:'Rifle action',n:'Hoof cadence',b:'Captain’s snare',r:'Tank cannon',q:'Parade drum roll',k:'General’s salute'};
+const marineTerms=[
+ 'Semper Fi','Semper Fidelis','Oorah','Devil Dog','Leatherneck','The Few, The Proud','Honor, Courage, Commitment','First to fight',
+ 'Every Marine a rifleman','Adapt and overcome','Improvise, adapt, overcome','No Marine left behind','Esprit de corps','Tun Tavern','Chesty Puller','The Crucible',
+ 'Parris Island','Camp Lejeune','Quantico','Marine Corps birthday','The fleet','Field day','Firewatch','Scuttlebutt',
+ 'Quarterdeck','Guidon','Colors','Formation','Inspection','Reveille','Taps','Boot camp',
+ 'Stand fast','Move out','Hold the line','On the double','Eyes front','Sound off','Carry on','Fall in',
+ 'Fall out','At ease','Attention','Present arms','Forward march','About face','Left face','Right face',
+ 'Dress right, dress','Parade rest','Report in','Aye aye','Roger that','Outstanding','Good to go','Mission accomplished',
+ 'Combat ready','Secure the area','Field exercise','Watch your six','Cover and move','Unit cohesion','Dress blues','Dress whites'
+];
+let phraseDeck=[],lastPhrase='';
+function nextMarineTerm(){
+ if(!phraseDeck.length){phraseDeck=[...marineTerms];for(let i=phraseDeck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[phraseDeck[i],phraseDeck[j]]=[phraseDeck[j],phraseDeck[i]]}if(phraseDeck.at(-1)===lastPhrase)[phraseDeck[0],phraseDeck[phraseDeck.length-1]]=[phraseDeck.at(-1),phraseDeck[0]]}
+ return lastPhrase=phraseDeck.pop();
+}
+const volumeControl=$('volume');
+function volume(){return Number(volumeControl.value)/100}
+volumeControl.oninput=()=>{$('volume-value').textContent=`${volumeControl.value}%`;if(volume()===0&&'speechSynthesis' in window)speechSynthesis.cancel()};
+function speak(message){
+ if(!soundEnabled||!volume())return;
+ if(!('speechSynthesis' in window)){soundState.textContent='Spoken callouts are unavailable in this browser.';return}
+ try{
+  speechSynthesis.cancel();
+  const call=new SpeechSynthesisUtterance(message);
+  const voices=speechSynthesis.getVoices();call.voice=voices.find(v=>v.lang?.toLowerCase().startsWith('en-us'))||voices.find(v=>v.lang?.toLowerCase().startsWith('en'))||null;
+  call.lang='en-US';call.rate=.94;call.pitch=.93;call.volume=volume();
+  call.onerror=()=>{soundState.textContent='Speech was blocked. Check browser speech and device volume.'};
+  speechSynthesis.speak(call);
+  soundState.textContent=`Speaking: ${message}`;
+ }catch(e){soundState.textContent='Spoken callouts are unavailable on this device.';console.warn('Speech unavailable',e)}
+}
+function announceCapture(piece){const term=nextMarineTerm();soundBanner(`${names[piece]} CAPTURE · “${term}”`);speak(term)}
 function soundBanner(message){$('sound-event').textContent=message;$('sound-banner').classList.remove('pulse');void $('sound-banner').offsetWidth;$('sound-banner').classList.add('pulse')}
 async function unlockAudio(){
  try{
@@ -27,10 +58,11 @@ soundButton.onclick=async()=>{
  soundButton.textContent=soundEnabled?'Sound on':'Sound off';
  soundButton.setAttribute('aria-pressed',String(soundEnabled));
  soundState.textContent=soundEnabled?'Starting audio…':'Sound muted';
- soundBanner(soundEnabled?'SOUND ON · Six Marine piece cues':'SOUND OFF · Press Sound on to hear the pieces');
+ soundBanner(soundEnabled?'SOUND ON · Wooden moves, spoken Marine captures':'SOUND OFF · Press Sound on to hear the pieces');
+ if(!soundEnabled&&'speechSynthesis' in window)speechSynthesis.cancel();
  if(soundEnabled){await unlockAudio();playCue('move')}
 };
-testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value,action=$('sound-action').value;soundBanner(choice==='mate'?'CHECKMATE · Reveille':`${names[choice]} ${action==='capture'?'CAPTURE':'MOVE'} · ${soundNames[choice]}`);playCue(choice==='mate'?'mate':action,choice)};
+testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value,action=$('sound-action').value;if(choice==='mate'){soundBanner('CHECKMATE · Reveille');playCue('mate')}else if(action==='capture')announceCapture(choice);else{soundBanner(`${names[choice]} MOVE · Wooden cue`);playCue('move',choice)}};
 let woodNoise=null;
 function noiseFor(ctx){
  if(woodNoise&&woodNoise.sampleRate===ctx.sampleRate)return woodNoise;
@@ -43,8 +75,8 @@ function noiseFor(ctx){
 async function playCue(kind,piece='p'){
  if(!soundEnabled)return;
  const ctx=await unlockAudio();if(!ctx)return;
- const start=ctx.currentTime+.012,noise=noiseFor(ctx),master=ctx.createDynamicsCompressor();
- master.threshold.value=-20;master.knee.value=20;master.ratio.value=3;master.attack.value=.003;master.release.value=.18;master.connect(ctx.destination);
+ const start=ctx.currentTime+.012,noise=noiseFor(ctx),master=ctx.createDynamicsCompressor(),level=ctx.createGain();
+ master.threshold.value=-20;master.knee.value=20;master.ratio.value=3;master.attack.value=.003;master.release.value=.18;level.gain.value=volume();master.connect(level).connect(ctx.destination);
  function woodenClack(delay=0,weight=1,depth=1){
   const at=start+delay;
   // A very short filtered impact resembles hardwood meeting hardwood.
@@ -113,13 +145,13 @@ async function playCue(kind,piece='p'){
  if(kind==='select'){woodenClack(0,.35,.72);return}
  if(kind==='move'||kind==='check'){
   // Movement has its own short signature for every rank, even without a capture.
-  if(piece==='p'){woodenClack(0,.72,.73);burst(.10,.055,.13,1900,1.1)}
+  if(piece==='p'){woodenClack(0,.72,.73);woodenClack(.11,.35,.58)}
   else if(piece==='n'){woodenClack(0,.8,.67);woodenClack(.13,.63,.72);woodenClack(.27,.72,.68)}
-  else if(piece==='b'){drum(0,.56);drum(.16,.42);woodenClack(.27,.68,.9)}
-  else if(piece==='r'){burst(0,.23,.12,170,.55);woodenClack(.18,.88,1.43)}
-  else if(piece==='q'){drum(0,.42);drum(.09,.49);drum(.18,.68);metal(.26,.45)}
-  else {drum(0,.78);drum(.22,.88);metal(.34,.72)}
-  if(kind==='check'){drum(.53,.75);drum(.68,1.02)}
+  else if(piece==='b'){woodenClack(0,.64,.85);woodenClack(.16,.52,.95)}
+  else if(piece==='r'){woodenClack(0,1.05,1.48);woodenClack(.22,.6,1.3)}
+  else if(piece==='q'){woodenClack(0,.56,.72);woodenClack(.09,.65,.78);woodenClack(.18,.82,.85)}
+  else {woodenClack(0,.95,1.15);woodenClack(.22,.95,1.15);woodenClack(.44,.95,1.15)}
+  if(kind==='check'){woodenClack(.58,1.12,.9);woodenClack(.74,1.12,.9)}
   return;
  }
  if(kind==='capture'){
@@ -152,11 +184,11 @@ function soundForMove(move){
  if(game.isCheckmate()){
   soundBanner('CHECKMATE · Reveille · Winner announced');
   playCue('mate');
-  if(soundEnabled&&'speechSynthesis' in window)try{speechSynthesis.cancel();const call=new SpeechSynthesisUtterance(`Checkmate. ${game.turn()==='w'?'Dress blues':'White'} wins.`);call.rate=.92;call.volume=.9;speechSynthesis.speak(call)}catch(e){console.warn('Spoken checkmate unavailable',e)}
+  speak(`Checkmate. ${game.turn()==='w'?'Dress blues':'White'} wins.`);
  }
- else if(move.captured){soundBanner(`${names[move.piece]} CAPTURE · ${soundNames[move.piece]}`);playCue('capture',move.piece)}
- else if(game.isCheck()){soundBanner(`${names[move.piece]} CHECK · ${soundNames[move.piece]}`);playCue('check',move.piece)}
- else {soundBanner(`${names[move.piece]} MOVE · ${soundNames[move.piece]}`);playCue('move',move.piece)}
+ else if(move.captured)announceCapture(move.piece);
+ else if(game.isCheck()){soundBanner(`${names[move.piece]} CHECK · Wooden cue`);playCue('check',move.piece)}
+ else {soundBanner(`${names[move.piece]} MOVE · Wooden cue`);playCue('move',move.piece)}
 }
 const square=(r,c)=>'abcdefgh'[c]+(8-r);
 function legal(){return selected?game.moves({square:selected,verbose:true}):[]}
