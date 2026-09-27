@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 82" fill="none" stroke-linejoin="round" stroke-linecap="round">
+ <path d="M9 62q1-12 13-15h78q11 3 12 15l-8 12H17z" fill="#122f4e" stroke="#ecc46f" stroke-width="4"/>
+ <path d="m23 42 15-13h46l12 13-5 11H28z" fill="#307159" stroke="#edc773" stroke-width="3"/>
+ <path d="m42 28 8-13h24l8 13z" fill="#203c55" stroke="#e6bd69" stroke-width="3"/>
+ <path d="M73 19h42v5H73z" fill="#d6ae69" stroke="#fff0b7" stroke-width="1.5"/>
+ <path d="M12 59h97" stroke="#eec87a" stroke-width="2"/>
+ <circle cx="29" cy="65" r="6" fill="#ae2837" stroke="#efcf88" stroke-width="2"/>
+ <circle cx="50" cy="65" r="6" fill="#ae2837" stroke="#efcf88" stroke-width="2"/>
+ <circle cx="71" cy="65" r="6" fill="#ae2837" stroke="#efcf88" stroke-width="2"/>
+ <circle cx="92" cy="65" r="6" fill="#ae2837" stroke="#efcf88" stroke-width="2"/>
+ <path d="m51 38 9-4 9 4-9 8z" fill="#eac16b"/>
+ <text x="61" y="54" fill="#f5d58e" font-family="Georgia" font-size="8" letter-spacing="2" text-anchor="middle">USMC</text>
+</svg>
