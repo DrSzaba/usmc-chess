@@ -15,4 +15,4 @@
     <path d="M47 78h8v8h-8z" fill="#ae2735" stroke="#e9c36d"/>
     <path d="M38 93h19" stroke="#e7c574" stroke-width="3"/>
     <path d="M35 97h22" stroke="#a82336" stroke-width="2"/>
-    <text x="50" y="20" fill="#ffe2a0" font-size="12" font-family="Georgia" text-anchor="middle" letter-spacing="2">★★★★</text><path d="M18 106h64" stroke="#e8bf6d" stroke-width="3"/></svg>
+    <path d="M24 31 20 7 35 20 50 3 65 20 80 7 76 31Z" fill="#eac16f" stroke="#fff0bd" stroke-width="2"/><path d="M25 28h50v6H25z" fill="#b67427" stroke="#ffe6a4" stroke-width="2"/><circle cx="50" cy="18" r="4" fill="#a7243c" stroke="#ffe9b2"/><circle cx="28" cy="20" r="2.5" fill="#3c88a2"/><circle cx="72" cy="20" r="2.5" fill="#3c88a2"/><path d="M36 30h28" stroke="#fff0ba" stroke-width="1.5"/><path d="M18 106h64" stroke="#e8bf6d" stroke-width="3"/></svg>
