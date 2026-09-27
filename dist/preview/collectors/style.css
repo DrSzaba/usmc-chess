@@ -71,3 +71,29 @@
 @keyframes audioPulse {from{box-shadow:0 0 0 4px #e8b45b80,0 3px 11px #12233855}to{box-shadow:0 3px 11px #12233855}}
 .level-help {float:right;color:#798b9d;font-size:10px}
 @media(max-width:760px){.audio-banner{margin:11px 12px 0;gap:7px;flex-wrap:wrap;min-height:45px;font-size:10px}.audio-banner strong{letter-spacing:.08em}}
+
+/* Dress blues and dress whites presentation for the 2D board. */
+#stage.flat-mode {display:flex;flex-direction:column;align-items:center;
+ background:radial-gradient(ellipse at center,#e8e4d9 0%,#cbc5b8 100%)}
+.flat-nameplate,.flat-motto {display:none;flex:none;text-align:center;color:#f7e5b8;
+ background:linear-gradient(110deg,#0b1c34,#1a3a5d 50%,#0b1c34);
+ border:2px solid #d9ad5c;box-shadow:inset 0 0 0 1px #fff2bf,0 3px 7px #25202b66;
+ font:700 10px/1.3 Georgia,serif;letter-spacing:.24em}
+.flat-mode .flat-nameplate {display:block;min-width:min(78%,480px);padding:7px 18px;margin-top:8px;
+ border-radius:3px 3px 8px 8px;border-bottom:3px solid #9e252c}
+.flat-mode .flat-motto {display:block;min-width:min(70%,420px);padding:6px 14px;margin-top:15px;
+ border-radius:8px 8px 3px 3px;border-top:3px solid #9e252c;font-size:9px}
+.flat-nameplate span {color:#efc373;padding:0 9px}.flat-motto span{color:#dd6d6d;padding:0 6px}
+.flat-mode #flat {margin-top:12px;border-width:10px;
+ box-shadow:0 20px 32px #1417208c,0 0 0 3px #8b1e29,0 0 0 6px #f8f2df,0 0 0 9px #193758,0 0 0 12px #d5aa5b,
+ inset 0 0 0 2px #fff1b9,inset 0 0 0 7px #652226,inset 0 0 0 10px #edc876}
+.flat-mode .sq .piece {border-radius:40% 40% 24% 24%;border-width:2px;
+ background-image:linear-gradient(145deg,#ffffff4d,transparent 37%),linear-gradient(150deg,#fffdf4,#e8e5da 64%,#cbbda8)}
+.flat-mode .sq .piece.b {background-image:linear-gradient(145deg,#ffffff45,transparent 38%),linear-gradient(150deg,#275480,#102f55 62%,#071a36)}
+.flat-mode .sq .piece:before {content:'★';top:2px}
+.flat-mode .sq .piece.type-p:before {content:'';width:22px;height:17px;top:2px;
+ background:url('./pfc.svg') center/contain no-repeat;filter:drop-shadow(0 1px 0 #fff7)}
+.flat-mode .sq .piece.type-p.b:before {filter:brightness(1.4) drop-shadow(0 1px 1px #071528)}
+.flat-mode .sq .piece.type-p .silhouette {margin-top:13px}
+.flat-mode .sq .piece .rank {position:relative;z-index:2;letter-spacing:.08em}
+@media(max-width:760px){.flat-mode .flat-nameplate{font-size:8px;letter-spacing:.12em;padding:5px 7px}.flat-mode .flat-motto{font-size:7px;letter-spacing:.1em;margin-top:10px}.flat-nameplate span{padding:0 2px}.flat-mode #flat{margin-top:10px;border-width:6px}.flat-mode .sq .piece.type-p:before{width:14px;height:12px}.flat-mode .sq .piece.type-p .silhouette{margin-top:8px}}
