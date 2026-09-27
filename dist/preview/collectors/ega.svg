@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 210" role="img" aria-label="Stylized Eagle, Globe and Anchor">
+ <defs>
+  <linearGradient id="brass" x2=".9" y2="1"><stop stop-color="#fff4bc"/><stop offset=".34" stop-color="#dca94b"/><stop offset=".68" stop-color="#8c5a20"/><stop offset="1" stop-color="#f2cf78"/></linearGradient>
+  <radialGradient id="sea"><stop stop-color="#31547b"/><stop offset="1" stop-color="#081c37"/></radialGradient>
+ </defs>
+ <g fill="none" stroke="url(#brass)" stroke-linecap="round" stroke-linejoin="round">
+  <ellipse cx="80" cy="103" rx="54" ry="56" fill="url(#sea)" stroke-width="5"/>
+  <ellipse cx="80" cy="103" rx="23" ry="56" stroke-width="2.6"/>
+  <path d="M28 103h104M35 77c24 14 65 14 90 0M35 129c24-14 65-14 90 0" stroke-width="2.4"/>
+  <path d="M80 46v112" stroke-width="2"/>
+  <path d="M79 17c-9 0-18 5-23 13l-13 7-26 3 13 8 23 3 19-8 8 9 8-9 19 8 23-3 13-8-26-3-13-7c-5-8-14-13-25-13Z" fill="url(#brass)" stroke-width="2.4"/>
+  <path d="M80 18c-5 8-6 14 0 20m-50 5 31-1m69 1-31-1M58 30l-21 10m65-10 21 10" stroke="#69451f" stroke-width="1.5"/>
+  <circle cx="76" cy="20" r="1.8" fill="#102341" stroke="none"/>
+  <path d="M87 21l14 4-13 3" fill="url(#brass)" stroke-width="1.4"/>
+  <path d="M80 69v104M62 78h36M80 68a7 7 0 1 0-1 0" stroke-width="5"/>
+  <path d="M80 173c-12 16-25 18-38 10-10-6-13-15-14-23l-11 11 21 30 15-3 27-21 27 21 15 3 21-30-11-11c-1 8-4 17-14 23-13 8-26 6-38-10Z" fill="url(#brass)" stroke-width="2.8"/>
+  <path d="M58 182c-10-13-17-23-20-37m84 0c-3 14-10 24-20 37" stroke-width="3"/>
+ </g>
+ <path d="M24 184c-5-2-8-6-10-11m122 11c5-2 8-6 10-11" stroke="#f4d88c" stroke-width="2" fill="none"/>
+</svg>
