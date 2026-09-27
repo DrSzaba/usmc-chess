@@ -1,11 +1,13 @@
 import { Chess } from '../../vendor/chess.js';
 const $=id=>document.getElementById(id), game=new Chess();
 const names={p:'Pawn',r:'Rook',n:'Knight',b:'Bishop',q:'Queen',k:'King'},ranks={p:'Lance Corporal',n:'Sergeant',b:'Captain',r:'Master Sergeant',q:'Colonel',k:'Four-Star General'},rankMarks={p:'LCPL',n:'SGT',b:'CAPT',r:'MSGT',q:'COL',k:'4★ GEN'},glyph={p:'♟',r:'♜',n:'♞',b:'♝',q:'♛',k:'♚'};
-let selected=null, flipped=false, flat=false, busy=false, timer=null, redraw3D=()=>{}, cameraReset=()=>{};
-function sizeFlatBoard(){const stage=$('stage'),size=Math.max(240,Math.floor(Math.min(stage.clientWidth*.94,stage.clientHeight-32,650)));$('flat').style.width=`${size}px`;$('flat').style.height=`${size}px`}
+let selected=null, flipped=false, flat=false, busy=false, timer=null, aiWorker=null, aiJob=0, redraw3D=()=>{}, cameraReset=()=>{};
+function sizeFlatBoard(){const stage=$('stage'),sideSpace=stage.clientWidth<650?82:158,size=Math.max(228,Math.floor(Math.min(stage.clientWidth-sideSpace,stage.clientHeight-32,650)));$('flat').style.width=`${size}px`;$('flat').style.height=`${size}px`}
 new ResizeObserver(sizeFlatBoard).observe($('stage'));sizeFlatBoard();
 let audioContext=null,soundEnabled=true;
 const soundButton=$('sound'),testButton=$('sound-test'),soundState=$('sound-state');
+const soundNames={p:'Rifle action',n:'Hoof cadence',b:'Captain’s snare',r:'Tank cannon',q:'Parade drum roll',k:'General’s salute'};
+function soundBanner(message){$('sound-event').textContent=message;$('sound-banner').classList.remove('pulse');void $('sound-banner').offsetWidth;$('sound-banner').classList.add('pulse')}
 async function unlockAudio(){
  try{
   audioContext??=new (window.AudioContext||window.webkitAudioContext)();
@@ -25,9 +27,10 @@ soundButton.onclick=async()=>{
  soundButton.textContent=soundEnabled?'Sound on':'Sound off';
  soundButton.setAttribute('aria-pressed',String(soundEnabled));
  soundState.textContent=soundEnabled?'Starting audio…':'Sound muted';
+ soundBanner(soundEnabled?'SOUND ON · Six Marine piece cues':'SOUND OFF · Press Sound on to hear the pieces');
  if(soundEnabled){await unlockAudio();playCue('move')}
 };
-testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value;playCue(choice==='mate'?'mate':$('sound-action').value,choice)};
+testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value,action=$('sound-action').value;soundBanner(choice==='mate'?'CHECKMATE · Reveille':`${names[choice]} ${action==='capture'?'CAPTURE':'MOVE'} · ${soundNames[choice]}`);playCue(choice==='mate'?'mate':action,choice)};
 let woodNoise=null;
 function noiseFor(ctx){
  if(woodNoise&&woodNoise.sampleRate===ctx.sampleRate)return woodNoise;
@@ -40,7 +43,8 @@ function noiseFor(ctx){
 async function playCue(kind,piece='p'){
  if(!soundEnabled)return;
  const ctx=await unlockAudio();if(!ctx)return;
- const start=ctx.currentTime+.012,noise=noiseFor(ctx);
+ const start=ctx.currentTime+.012,noise=noiseFor(ctx),master=ctx.createDynamicsCompressor();
+ master.threshold.value=-20;master.knee.value=20;master.ratio.value=3;master.attack.value=.003;master.release.value=.18;master.connect(ctx.destination);
  function woodenClack(delay=0,weight=1,depth=1){
   const at=start+delay;
   // A very short filtered impact resembles hardwood meeting hardwood.
@@ -50,7 +54,7 @@ async function playCue(kind,piece='p'){
   impact.gain.setValueAtTime(.0001,at);
   impact.gain.exponentialRampToValueAtTime(.30*weight,at+.003);
   impact.gain.exponentialRampToValueAtTime(.0001,at+.105*depth);
-  strike.connect(band).connect(low).connect(impact).connect(ctx.destination);
+  strike.connect(band).connect(low).connect(impact).connect(master);
   strike.start(at);strike.stop(at+.13*depth);
   // Brief, damped body resonance: pitch falls instead of beeping.
   for(const [freq,volume,decay] of [[155,.15,.16],[288,.09,.09],[470,.032,.055]]){
@@ -60,7 +64,7 @@ async function playCue(kind,piece='p'){
    gain.gain.setValueAtTime(.0001,at);
    gain.gain.exponentialRampToValueAtTime(volume*weight,at+.003);
    gain.gain.exponentialRampToValueAtTime(.0001,at+decay);
-   osc.connect(gain).connect(ctx.destination);
+   osc.connect(gain).connect(master);
    osc.start(at);osc.stop(at+decay+.01);
   }
  }
@@ -68,16 +72,16 @@ async function playCue(kind,piece='p'){
   const at=start+delay,osc=ctx.createOscillator(),tone=ctx.createGain(),strike=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),hiss=ctx.createGain();
   osc.type='triangle';osc.frequency.setValueAtTime(185,at);osc.frequency.exponentialRampToValueAtTime(76,at+.12);
   tone.gain.setValueAtTime(.0001,at);tone.gain.exponentialRampToValueAtTime(.22*weight,at+.004);tone.gain.exponentialRampToValueAtTime(.0001,at+.18);
-  osc.connect(tone).connect(ctx.destination);osc.start(at);osc.stop(at+.19);
+  osc.connect(tone).connect(master);osc.start(at);osc.stop(at+.19);
   strike.buffer=noise;filter.type='bandpass';filter.frequency.value=1700;hiss.gain.setValueAtTime(.14*weight,at);hiss.gain.exponentialRampToValueAtTime(.0001,at+.075);
-  strike.connect(filter).connect(hiss).connect(ctx.destination);strike.start(at);strike.stop(at+.09);
+  strike.connect(filter).connect(hiss).connect(master);strike.start(at);strike.stop(at+.09);
  }
  function burst(delay,duration,volume,frequency,q=.7){
   const at=start+delay,source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
   source.buffer=noise;filter.type='bandpass';filter.frequency.value=frequency;filter.Q.value=q;
   gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(volume,at+.004);
   gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
-  source.connect(filter).connect(gain).connect(ctx.destination);source.start(at);source.stop(at+duration+.01);
+  source.connect(filter).connect(gain).connect(master);source.start(at);source.stop(at+duration+.01);
  }
  function metal(delay=0,weight=1){
   const at=start+delay;
@@ -85,7 +89,7 @@ async function playCue(kind,piece='p'){
    const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.value=frequency;
    gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(level*weight,at+.003);
    gain.gain.exponentialRampToValueAtTime(.0001,at+.23);
-   osc.connect(gain).connect(ctx.destination);osc.start(at);osc.stop(at+.24);
+   osc.connect(gain).connect(master);osc.start(at);osc.stop(at+.24);
   }
  }
  function cannon(delay=0){
@@ -96,7 +100,7 @@ async function playCue(kind,piece='p'){
   osc.type='sawtooth';osc.frequency.setValueAtTime(freq*.982,at);osc.frequency.linearRampToValueAtTime(freq,at+.035);
   filter.type='lowpass';filter.frequency.setValueAtTime(1150,at);filter.frequency.linearRampToValueAtTime(2600,at+.05);
   gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(volume,at+.035);gain.gain.setValueAtTime(volume*.84,at+Math.max(.045,duration-.055));gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
-  osc.connect(filter).connect(gain).connect(ctx.destination);osc.start(at);osc.stop(at+duration+.015);
+  osc.connect(filter).connect(gain).connect(master);osc.start(at);osc.stop(at+duration+.015);
  }
  function reveille(offset=0){
   // Short bugle arrangement of the opening Reveille call; notes use the bugle's harmonic series.
@@ -146,12 +150,13 @@ async function playCue(kind,piece='p'){
 function soundForMove(move){
  // Let the final position determine the cue, even for the computer's move.
  if(game.isCheckmate()){
+  soundBanner('CHECKMATE · Reveille · Winner announced');
   playCue('mate');
   if(soundEnabled&&'speechSynthesis' in window)try{speechSynthesis.cancel();const call=new SpeechSynthesisUtterance(`Checkmate. ${game.turn()==='w'?'Dress blues':'White'} wins.`);call.rate=.92;call.volume=.9;speechSynthesis.speak(call)}catch(e){console.warn('Spoken checkmate unavailable',e)}
  }
- else if(move.captured)playCue('capture',move.piece);
- else if(game.isCheck())playCue('check',move.piece);
- else playCue('move',move.piece);
+ else if(move.captured){soundBanner(`${names[move.piece]} CAPTURE · ${soundNames[move.piece]}`);playCue('capture',move.piece)}
+ else if(game.isCheck()){soundBanner(`${names[move.piece]} CHECK · ${soundNames[move.piece]}`);playCue('check',move.piece)}
+ else {soundBanner(`${names[move.piece]} MOVE · ${soundNames[move.piece]}`);playCue('move',move.piece)}
 }
 const square=(r,c)=>'abcdefgh'[c]+(8-r);
 function legal(){return selected?game.moves({square:selected,verbose:true}):[]}
@@ -168,24 +173,35 @@ function render(){
  const winner=game.turn()==='w'?'Dress blues':'White';
  $('status').textContent=game.isCheckmate()?`CHECKMATE — ${winner} wins`:game.isStalemate()?'Stalemate':game.isDraw()?'Draw':busy?'Computer thinking…':`${team} to move`;
  $('end-banner').hidden=!game.isCheckmate();$('end-winner').textContent=game.isCheckmate()?`${winner.toUpperCase()} WINS`:'';
- $('detail').textContent=game.isCheckmate()?'Checkmate. Start a new game for a rematch.':game.isDraw()?'The game has ended in a draw.':game.isCheck()?'Check — protect your king.':busy?'Dress blues are choosing their move.':selected?`${ranks[game.get(selected).type]} · ${names[game.get(selected).type]} on ${selected}. Choose a highlighted square.`:'Select a piece to see its legal moves.';
+ $('detail').textContent=game.isCheckmate()?'Checkmate. Start a new game for a rematch.':game.isDraw()?'The game has ended in a draw.':game.isCheck()?'Check — protect your king.':busy?`Dress blues are choosing a move at level ${$('level').value}.`:selected?`${ranks[game.get(selected).type]} · ${names[game.get(selected).type]} on ${selected}. Choose a highlighted square.`:'Select a piece to see its legal moves.';
  $('undo').disabled=game.history().length===0;
  const hist=game.history();$('history').replaceChildren();for(let i=0;i<hist.length;i+=2){const li=document.createElement('li');li.textContent=hist[i].padEnd(9,' ')+(hist[i+1]||'');$('history').append(li)}$('history').scrollTop=$('history').scrollHeight;$('count').textContent=`${hist.length} half-moves`;
  const destinations=new Set(legal().map(m=>m.to)), last=game.history({verbose:true}).at(-1), focus=document.activeElement?.dataset.square;
  $('flat').replaceChildren();for(let i=0;i<64;i++){const r=flipped?7-Math.floor(i/8):Math.floor(i/8),c=flipped?7-i%8:i%8,s=square(r,c),p=game.get(s),b=document.createElement('button');b.className=`sq ${(r+c)%2?'dark':'light'}${s===selected?' selected':''}${destinations.has(s)?' legal':''}${last&&(last.from===s||last.to===s)?' last':''}`;b.dataset.square=s;b.setAttribute('aria-label',`${s}: ${p?`${p.color==='w'?'White':'Dress blue'} ${names[p.type]}, ${ranks[p.type]}`:'empty'}${destinations.has(s)?', legal move':''}`);b.setAttribute('aria-pressed',String(s===selected));if(p){const span=document.createElement('span');span.className=`piece ${p.color} type-${p.type}`;const silhouette=document.createElement('span');silhouette.className='silhouette';silhouette.textContent=glyph[p.type];const rank=document.createElement('span');rank.className='rank';rank.textContent=rankMarks[p.type];span.append(silhouette,rank);b.append(span)}const caption=document.createElement('small');caption.textContent=s;b.append(caption);b.onclick=()=>choose(s);b.onkeydown=e=>{const d={ArrowRight:1,ArrowLeft:-1,ArrowDown:8,ArrowUp:-8}[e.key];if(d){e.preventDefault();$('flat').children[Math.max(0,Math.min(63,i+d))].focus()}};$('flat').append(b)}
  if(flat&&focus)$('flat').querySelector(`[data-square="${focus}"]`)?.focus();redraw3D();
 }
-const values={p:100,n:320,b:330,r:500,q:900,k:0};
-function evaluate(){if(game.isCheckmate())return game.turn()==='w'?100000:-100000;if(game.isDraw())return 0;let n=0;game.board().forEach((row,r)=>row.forEach((p,c)=>{if(p)n+=(p.color==='b'?1:-1)*(values[p.type]+(p.type==='p'?(p.color==='b'?r:7-r)*5:0)+(3.5-Math.abs(c-3.5))*2)}));return n}
-function search(depth,a,b){if(!depth||game.isGameOver())return evaluate();const max=game.turn()==='b';let best=max?-Infinity:Infinity;const moves=game.moves({verbose:true}).sort((x,y)=>(values[y.captured]||0)-(values[x.captured]||0));for(const m of moves){game.move(m);const v=search(depth-1,a,b);game.undo();best=max?Math.max(best,v):Math.min(best,v);if(max)a=Math.max(a,best);else b=Math.min(b,best);if(b<=a)break}return best}
-function scheduleCPU(){if($('mode').value!=='cpu'||game.turn()!=='b'||game.isGameOver())return;busy=true;render();timer=setTimeout(()=>{try{let best=-Infinity,move=null;for(const m of game.moves({verbose:true})){game.move(m);const v=search(1,-Infinity,Infinity);game.undo();if(v>best){best=v;move=m}}if(move){game.move(move);soundForMove(move)}}finally{busy=false;timer=null;render()}},420)}
-function cancel(){clearTimeout(timer);timer=null;busy=false;selected=null;if('speechSynthesis' in window)speechSynthesis.cancel()}
+function scheduleCPU(){
+ if($('mode').value!=='cpu'||game.turn()!=='b'||game.isGameOver())return;
+ busy=true;render();const id=++aiJob;
+ timer=setTimeout(()=>{
+  timer=null;const fallback=()=>game.moves({verbose:true})[0];
+  const finish=choice=>{if(id!==aiJob)return;aiWorker?.terminate();aiWorker=null;busy=false;
+   if(game.turn()==='b'&&!game.isGameOver()){const candidate=choice||fallback();if(candidate){const move=game.move({from:candidate.from,to:candidate.to,promotion:candidate.promotion||'q'});soundForMove(move)}}render()};
+  try{const worker=new Worker('./ai-worker.mjs?v=levels-1',{type:'module'});aiWorker=worker;
+   worker.onmessage=e=>{if(e.data.id!==id)return;if(e.data.error)console.warn('Computer search:',e.data.error);finish(e.data.move)};
+   worker.onerror=e=>{console.warn('Computer search unavailable',e);finish(null)};
+   worker.postMessage({id,fen:game.fen(),level:Number($('level').value)});
+  }catch(e){console.warn('Computer worker unavailable',e);finish(null)}
+ },240);
+}
+function cancel(){clearTimeout(timer);timer=null;aiJob++;aiWorker?.terminate();aiWorker=null;busy=false;selected=null;if('speechSynthesis' in window)speechSynthesis.cancel()}
 function setView(){ $('canvas').hidden=flat;$('flat').hidden=!flat;$('view').textContent=flat?'Use 3D board':'Use 2D board';$('instructions').textContent=flat?'Select a piece, then a highlighted square. Arrow keys navigate the board.':'Select a piece, then a highlighted square. Drag to rotate the 3D board and scroll to zoom.';sizeFlatBoard();render() }
 let has3D=false;
  $('view').onclick=()=>{if(has3D){flat=!flat;setView()}};
  $('new').onclick=()=>{if(game.history().length&&!confirm('Start a new game? The current match will be cleared.'))return;cancel();game.reset();render()};
  $('undo').onclick=()=>{cancel();game.undo();if($('mode').value==='cpu'&&game.turn()==='b')game.undo();render()};
- $('mode').onchange=()=>{cancel();render();scheduleCPU()};
+ $('mode').onchange=()=>{cancel();$('level').disabled=$('mode').value!=='cpu';render();scheduleCPU()};
+ $('level').onchange=()=>{cancel();render();scheduleCPU()};
  $('flip').onclick=()=>{flipped=!flipped;cameraReset();render()};$('reset-view').onclick=()=>cameraReset();
 render();
 try {
