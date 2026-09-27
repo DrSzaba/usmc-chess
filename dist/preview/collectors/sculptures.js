@@ -50,7 +50,7 @@ export function makeWorkshop(environment) {
   for(let j=0;j<20;j++){const a=j*Math.PI/10;ell(g,Math.sin(a)*.418,.302,Math.cos(a)*.418,.008,.008,.008,M.goldLight)}
   for(let j=0;j<32;j++){const a=j*Math.PI/16;ell(g,Math.sin(a)*.382,.134,Math.cos(a)*.382,.006,.009,.006,j%4?M.gold:M.red)}
   ring(g,.347,.004,M.goldLight,0,.368);
-  const rank={p:'PFC',n:'SGT',r:'MSGT',b:'CAPT',q:'COL',k:'4★ GEN'}[type];
+  const rank={p:'PFC',n:'1ST LT',r:'MSGT',b:'CAPT',q:'COL',k:'4★ GEN'}[type];
   // Large raised plaques on both sides, mounted beyond the curved pedestal.
   for(const a of [0,Math.PI]){
    const plaque=new T.Group();plaque.rotation.y=a;g.add(plaque);
@@ -194,14 +194,18 @@ export function makeWorkshop(environment) {
    line(body,[[-.16,1.37,.09],[.14,1.04,.18]],.007,M.goldLight);
    for(let j=0;j<5;j++)ell(body,-.11+j*.035,1.175,.146,.013,.022,.008,j%2?M.ribbonBlue:M.goldLight);
    // Tall ceremonial crown, with four prominent points above the dress cover.
-   profile(body,[[1.777,.144,.127],[1.812,.151,.135],[1.838,.143,.127]],M.gold,64);
-   ring(body,.147,.011,M.goldLight,0,1.814).scale.z=.91;
+   profile(body,[[1.777,.145,.128],[1.812,.153,.136],[1.85,.151,.133],[1.865,.14,.123]],M.gold,64);
+   for(const y of [1.81,1.851])ring(body,.15,.012,M.goldLight,0,y).scale.z=.90;
    for(let j=0;j<8;j++){
-    const a=j*Math.PI/4, x=Math.sin(a)*.139,z=Math.cos(a)*.122;
-    line(body,[[x,1.828,z],[x*1.03,1.976+(j%2?.02:.105),z*1.03],[x*.78,1.857,z*.78]],.012,M.goldLight);
-    ell(body,x*1.03,1.986+(j%2?.02:.105),z*1.03,.015,.018,.014,j%2?M.gem:M.goldLight);
+    const a=j*Math.PI/4,x=Math.sin(a)*.145,z=Math.cos(a)*.125,top=j%2?1.98:2.105;
+    line(body,[[x,1.852,z],[x*1.12,top-.028,z*1.12],[x*.74,1.89,z*.74]],.016,M.goldLight);
+    ell(body,x*1.12,top,z*1.12,.022,.029,.02,j%2?M.gem:M.goldLight);
+    ell(body,x,1.826,z,.017,.022,.012,j%2?M.goldLight:M.gem);
+    line(body,[[x*.9,1.87,z*.9],[x*.42,1.965,z*.42],[0,1.99,0]],.008,M.gold);
    }
-   for(let j=-1;j<=2;j++)star(body,.021,j*.055-.027,1.814,.139,M.goldLight);
+   cyl(body,.047,.065,.06,M.gold,0,1.985,0,12);
+   ell(body,0,2.032,0,.057,.034,.057,M.goldLight);
+   for(let j=-1;j<=2;j++)star(body,.021,j*.055-.027,1.815,.14,M.goldLight);
   }
   // Fine raised seams, collar braid, cuff studs and polished boot caps.
   for(const sign of [-1,1]){
@@ -218,6 +222,19 @@ export function makeWorkshop(environment) {
    }
    for(let j=0;j<4;j++)ell(body,sign*.232,1.009+j*.017,.073,.004,.004,.003,M.goldLight);
    line(body,[[sign*.191,1.34,-.06],[sign*.197,1.25,-.077],[sign*.219,1.13,-.045]],.003,M.gold);
+  }
+  if(type==='b'){
+   // Ceremonial long rifle; green leaf finial echoes the Tyrolean feather.
+   const x=-.315,z=.075;
+   limb(body,[x,.61,z],[x,1.72,z],.016,.011,M.black);
+   limb(body,[x,.93,z],[x,1.83,z],.011,.009,M.silver);
+   box(body,.065,.30,.065,M.hair,x,.61,z);
+   box(body,.063,.12,.035,M.gold,x,.91,z);
+   box(body,.045,.055,.042,M.black,x,1.13,z);
+   line(body,[[x,.99,z+.026],[x+.08,1.035,z+.052],[x+.09,1.10,z+.053]],.010,M.goldLight);
+   const leaf=ell(body,x,1.93,z,.025,.105,.012,M.ribbonGreen);
+   leaf.rotation.z=-.22;
+   line(body,[[x,1.84,z+.013],[x,1.98,z+.013]],.003,M.goldLight);
   }
   // The bishop's taller hat is balanced by a slightly shorter coat, not an oversized base.
   const scale=type==='k'?1.10:type==='b'?.98:.95;
@@ -251,9 +268,17 @@ export function makeWorkshop(environment) {
   }
   cyl(g,.047,.052,.093,skin,0,1.507);
   face(g,skin,1.668,true);
-  // Tiara with individual arches and ruby cabochons.
-  ring(g,.12,.011,M.gold,0,1.786).scale.z=.89;
-  for(let j=0;j<9;j++){const a=(j-4)*.31,r=.12,h=.06+.028*(1-Math.abs(j-4)/4);line(g,[[Math.sin(a-.12)*r,1.79,Math.cos(a-.12)*r],[Math.sin(a)*r,1.79+h,Math.cos(a)*r],[Math.sin(a+.12)*r,1.79,Math.cos(a+.12)*r]],.007,M.gold);ell(g,Math.sin(a)*r,1.796+h,Math.cos(a)*r,.01,.016,.009,j%2?M.goldLight:M.gem)}
+  // Queen's open coronet with layered circlets, jeweled arches and ruby crest.
+  profile(g,[[1.77,.119,.106],[1.799,.127,.113],[1.813,.13,.117]],M.gold,48);
+  for(const y of [1.792,1.817])ring(g,.129,.009,M.goldLight,0,y).scale.z=.9;
+  for(let j=0;j<9;j++){
+   const a=j*Math.PI*2/9,x=Math.sin(a)*.122,z=Math.cos(a)*.108,high=j===0?1.955:1.89+(j%2)*.035;
+   line(g,[[x,1.808,z],[x*1.14,high-.02,z*1.14],[x*.56,1.835,z*.56]],.011,M.goldLight);
+   ell(g,x*1.14,high,z*1.14,.017,.024,.015,j%2?M.gem:M.goldLight);
+   ell(g,x,1.804,z,.012,.014,.009,j%2?M.goldLight:M.gem);
+  }
+  for(const sign of [-1,1])line(g,[[sign*.12,1.82,.03],[sign*.065,1.93,.035],[0,1.967,0]],.009,M.gold);
+  ell(g,0,1.977,0,.031,.035,.031,M.gem);
   ell(g,0,1.459,.092,.014,.02,.008,M.gem);
   // Colonel's raised eagle pin beneath the queen's neckline.
   line(g,[[-.09,1.405,.11],[-.04,1.434,.13],[0,1.412,.139],[.04,1.434,.13],[.09,1.405,.11]],.011,M.goldLight);
@@ -323,7 +348,7 @@ export function makeWorkshop(environment) {
   ell(g,0,1.10,-.065,.116,.039,.132,M.gold);
   line(g,[[-.168,1.01,.13],[0,.89,.3],[.168,1.01,.13]],.014,M.gold);
   for(const sign of [-1,1]){const medal=insignia(g,sign*.20,.923,-.07,.21);medal.rotation.y=sign*Math.PI/2;const stirrup=ring(g,.06,.009,M.gold,sign*.222,.84,-.045);stirrup.rotation.x=0;stirrup.rotation.y=Math.PI/2}
-  // Mounted Sergeant: boots straddle the horse; hands hold the reins.
+  // Mounted First Lieutenant: boots straddle the horse; hands hold the reins.
   const skin=color==='w'?M.skinW:M.skinB;
   for(const sign of [-1,1]){
    limb(g,[sign*.09,1.18,-.115],[sign*.22,1.055,.005],.068,.055,pants);
@@ -334,7 +359,7 @@ export function makeWorkshop(environment) {
    limb(g,[sign*.145,1.55,-.06],[sign*.205,1.37,.045],.061,.045,u);
    limb(g,[sign*.205,1.37,.045],[sign*.135,1.23,.16],.045,.031,u);
    ell(g,sign*.135,1.215,.16,.036,.045,.034,M.white);
-   for(let j=0;j<3;j++)line(g,[[sign*.231,1.48-j*.03,.025],[sign*.238,1.46-j*.03,.065],[sign*.23,1.48-j*.03,.096]],.006,M.goldLight);
+   box(g,.018,.083,.026,M.silver,sign*.235,1.468,.052);
   }
   profile(g,[[1.16,.10,.08,-.10],[1.24,.16,.095,-.10],[1.39,.155,.10,-.10],[1.52,.16,.10,-.10],[1.61,.115,.07,-.10]],u,36);
   box(g,.25,.033,.18,M.black,0,1.27,-.10);
@@ -346,8 +371,9 @@ export function makeWorkshop(environment) {
   ell(g,0,1.875,.015,.13,.013,.085,M.black);
   line(g,[[-.08,1.91,-.01],[0,1.91,.025],[.08,1.91,-.01]],.006,M.goldLight);
   insignia(g,0,1.933,.015,.12);
+   box(g,.018,.065,.012,M.silver,0,1.927,.035);
   box(g,.17,.09,.018,M.navy,0,1.44,.005);
-  text(g,'SGT',.15,.075,0,1.44,.017);
+  text(g,'1ST LT',.15,.075,0,1.44,.017);
   for(const sign of [-1,1])line(g,[[sign*.13,1.22,.16],[sign*.04,1.18,.33],[sign*.085,1.46,.38]],.006,M.gold);
   for(const sign of [-1,1])for(let j=0;j<5;j++)ell(g,sign*.188,1.04-j*.025,-.19,.004,.004,.004,M.goldLight);
  }
