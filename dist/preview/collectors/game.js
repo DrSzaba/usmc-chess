@@ -1,6 +1,6 @@
 import { Chess } from '../../vendor/chess.js';
 const $=id=>document.getElementById(id), game=new Chess();
-const names={p:'Pawn',r:'Rook',n:'Knight',b:'Bishop',q:'Queen',k:'King'},ranks={p:'Private First Class',n:'Sergeant',b:'Captain',r:'Master Sergeant',q:'Colonel',k:'Four-Star General'},rankMarks={p:'PFC',n:'SGT',b:'CAPT',r:'MSGT',q:'COL',k:'4★ GEN'},glyph={p:'♟',r:'♜',n:'♞',b:'♝',q:'♛',k:'♚'};
+const names={p:'Pawn',r:'Rook',n:'Knight',b:'Bishop',q:'Queen',k:'King'},ranks={p:'Private First Class',n:'First Lieutenant',b:'Captain',r:'Master Sergeant',q:'Colonel',k:'Four-Star General'},rankMarks={p:'PFC',n:'1ST LT',b:'CAPT',r:'MSGT',q:'COL',k:'4★ GEN'},glyph={p:'♟',r:'♜',n:'♞',b:'♝',q:'♛',k:'♚'};
 let selected=null, flipped=false, flat=false, busy=false, timer=null, aiWorker=null, aiJob=0, redraw3D=()=>{}, cameraReset=()=>{};
 function sizeFlatBoard(){const stage=$('stage'),sideSpace=stage.clientWidth<650?82:158,size=Math.max(228,Math.floor(Math.min(stage.clientWidth-sideSpace,stage.clientHeight-105,650)));$('flat').style.width=`${size}px`;$('flat').style.height=`${size}px`}
 new ResizeObserver(sizeFlatBoard).observe($('stage'));sizeFlatBoard();
