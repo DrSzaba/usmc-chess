@@ -210,6 +210,9 @@ function render(){
  $('status').textContent=game.isCheckmate()?`CHECKMATE — ${winner} wins`:game.isStalemate()?'Stalemate':game.isDraw()?'Draw':busy?'Computer thinking…':`${team} to move`;
  $('end-banner').hidden=!game.isCheckmate();$('end-winner').textContent=game.isCheckmate()?`${winner.toUpperCase()} WINS`:'';
  $('detail').textContent=game.isCheckmate()?'Checkmate. Start a new game for a rematch.':game.isDraw()?'The game has ended in a draw.':game.isCheck()?'Check — protect your king.':busy?`Dress blues are choosing a move at level ${$('level').value}.`:selected?`${ranks[game.get(selected).type]} · ${names[game.get(selected).type]} on ${selected}. Choose a highlighted square.`:'Select a piece to see its legal moves.';
+ const featured=selected&&game.get(selected),showPortrait=flat&&featured&&['q','k'].includes(featured.type);
+ $('portrait-card').hidden=!showPortrait;
+ if(showPortrait){const role=featured.type==='k'?'general':'queen',side=featured.color==='w'?'white':'blue';$('portrait-image').src=`./${role}-${side}.svg`;$('portrait-image').alt=`${side} ${role} Marine portrait`;$('portrait-title').textContent=featured.type==='k'?'Four-Star General':'Colonel Queen';$('portrait-caption').textContent=`${side==='white'?'Dress whites':'Dress blues'} · ${selected}`}
  $('undo').disabled=game.history().length===0;
  const hist=game.history();$('history').replaceChildren();for(let i=0;i<hist.length;i+=2){const li=document.createElement('li');li.textContent=hist[i].padEnd(9,' ')+(hist[i+1]||'');$('history').append(li)}$('history').scrollTop=$('history').scrollHeight;$('count').textContent=`${hist.length} half-moves`;
  const destinations=new Set(legal().map(m=>m.to)), last=game.history({verbose:true}).at(-1), focus=document.activeElement?.dataset.square;
