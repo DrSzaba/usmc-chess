@@ -1,8 +1,8 @@
 import { Chess } from '../../vendor/chess.js';
 const $=id=>document.getElementById(id), game=new Chess();
-const names={p:'Pawn',r:'Rook',n:'Knight',b:'Bishop',q:'Queen',k:'King'},ranks={p:'Lance Corporal',n:'Sergeant',b:'Captain',r:'Master Sergeant',q:'Colonel',k:'Four-Star General'},rankMarks={p:'LCPL',n:'SGT',b:'CAPT',r:'MSGT',q:'COL',k:'4★ GEN'},glyph={p:'♟',r:'♜',n:'♞',b:'♝',q:'♛',k:'♚'};
+const names={p:'Pawn',r:'Rook',n:'Knight',b:'Bishop',q:'Queen',k:'King'},ranks={p:'Private First Class',n:'Sergeant',b:'Captain',r:'Master Sergeant',q:'Colonel',k:'Four-Star General'},rankMarks={p:'PFC',n:'SGT',b:'CAPT',r:'MSGT',q:'COL',k:'4★ GEN'},glyph={p:'♟',r:'♜',n:'♞',b:'♝',q:'♛',k:'♚'};
 let selected=null, flipped=false, flat=false, busy=false, timer=null, aiWorker=null, aiJob=0, redraw3D=()=>{}, cameraReset=()=>{};
-function sizeFlatBoard(){const stage=$('stage'),sideSpace=stage.clientWidth<650?82:158,size=Math.max(228,Math.floor(Math.min(stage.clientWidth-sideSpace,stage.clientHeight-32,650)));$('flat').style.width=`${size}px`;$('flat').style.height=`${size}px`}
+function sizeFlatBoard(){const stage=$('stage'),sideSpace=stage.clientWidth<650?82:158,size=Math.max(228,Math.floor(Math.min(stage.clientWidth-sideSpace,stage.clientHeight-105,650)));$('flat').style.width=`${size}px`;$('flat').style.height=`${size}px`}
 new ResizeObserver(sizeFlatBoard).observe($('stage'));sizeFlatBoard();
 let audioContext=null,soundEnabled=true;
 const soundButton=$('sound'),testButton=$('sound-test'),soundState=$('sound-state');
@@ -195,7 +195,7 @@ function scheduleCPU(){
  },240);
 }
 function cancel(){clearTimeout(timer);timer=null;aiJob++;aiWorker?.terminate();aiWorker=null;busy=false;selected=null;if('speechSynthesis' in window)speechSynthesis.cancel()}
-function setView(){ $('canvas').hidden=flat;$('flat').hidden=!flat;$('view').textContent=flat?'Use 3D board':'Use 2D board';$('instructions').textContent=flat?'Select a piece, then a highlighted square. Arrow keys navigate the board.':'Select a piece, then a highlighted square. Drag to rotate the 3D board and scroll to zoom.';sizeFlatBoard();render() }
+function setView(){ $('canvas').hidden=flat;$('flat').hidden=!flat;$('stage').classList.toggle('flat-mode',flat);$('view').textContent=flat?'Use 3D board':'Use 2D board';$('instructions').textContent=flat?'Select a piece, then a highlighted square. Arrow keys navigate the board.':'Select a piece, then a highlighted square. Drag to rotate the 3D board and scroll to zoom.';sizeFlatBoard();render() }
 let has3D=false;
  $('view').onclick=()=>{if(has3D){flat=!flat;setView()}};
  $('new').onclick=()=>{if(game.history().length&&!confirm('Start a new game? The current match will be cleared.'))return;cancel();game.reset();render()};
