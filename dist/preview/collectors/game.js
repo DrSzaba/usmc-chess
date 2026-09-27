@@ -63,6 +63,7 @@ soundButton.onclick=async()=>{
  if(soundEnabled){await unlockAudio();playCue('move')}
 };
 testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value,action=$('sound-action').value;if(choice==='mate'){soundBanner('CHECKMATE · Reveille');playCue('mate')}else if(action==='capture')announceCapture(choice);else{soundBanner(`${names[choice]} MOVE · Wooden cue`);playCue('move',choice)}};
+$('board-tone').onchange=()=>{const label=$('board-tone').selectedOptions[0].textContent;soundBanner(`BOARD SOUND · ${label}`);playCue('move','p')};
 let woodNoise=null;
 function noiseFor(ctx){
  if(woodNoise&&woodNoise.sampleRate===ctx.sampleRate)return woodNoise;
@@ -78,6 +79,9 @@ async function playCue(kind,piece='p'){
  const start=ctx.currentTime+.012,noise=noiseFor(ctx),master=ctx.createDynamicsCompressor(),level=ctx.createGain();
  master.threshold.value=-20;master.knee.value=20;master.ratio.value=3;master.attack.value=.003;master.release.value=.18;level.gain.value=volume();master.connect(level).connect(ctx.destination);
  function woodenClack(delay=0,weight=1,depth=1){
+  const tone=$('board-tone').value;
+  depth*=tone==='mahogany'?1.42:tone==='parade'?.66:1;
+  weight*=tone==='mahogany'?1.12:tone==='parade'?.82:1;
   const at=start+delay;
   // A very short filtered impact resembles hardwood meeting hardwood.
   const strike=ctx.createBufferSource(),band=ctx.createBiquadFilter(),low=ctx.createBiquadFilter(),impact=ctx.createGain();
@@ -237,7 +241,7 @@ let has3D=false;
  $('flip').onclick=()=>{flipped=!flipped;cameraReset();render()};$('reset-view').onclick=()=>cameraReset();
 render();
 try {
- const { createPresentation } = await import('./presentation.js?v=uniform-13');
+ const { createPresentation } = await import('./presentation.js?v=uniform-14');
  const view3D = await createPresentation({ stage: $('stage'), host: $('canvas'), game, choose, legal, selection:()=>selected, isFlat:()=>flat, isFlipped:()=>flipped, ranks, rankMarks });
  redraw3D=view3D.redraw; cameraReset=view3D.reset;
  for (const [id,fn] of Object.entries({'showcase':view3D.showcase,'overhead':view3D.overhead,'zoom-in':()=>view3D.zoom(.82),'zoom-out':()=>view3D.zoom(1.22),'inspect':()=>view3D.inspect(selected)})) $(id).onclick=fn;
