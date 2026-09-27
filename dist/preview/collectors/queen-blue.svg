@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 116"><defs><linearGradient id="medal" x2="1" y2="1"><stop stop-color="#fff2c1"/><stop offset=".5" stop-color="#b77929"/><stop offset="1" stop-color="#f4d986"/></linearGradient></defs><path d="M50 3 94 26 94 84 50 113 6 84 6 26Z" fill="#112b4b" stroke="url(#medal)" stroke-width="4"/><path d="M50 8 89 29 89 82 50 108 11 82 11 29Z" fill="#224566" stroke="#ae2839" stroke-width="2"/><circle cx="50" cy="53" r="44" fill="#152d4b"/><path d="M16 106 Q20 83 33 72 L41 68 59 68 67 72 Q80 82 84 106Z" fill="#12375f" stroke="#e7b85f" stroke-width="3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 116"><defs><linearGradient id="medal" x2="1" y2="1"><stop stop-color="#fff2c1"/><stop offset=".5" stop-color="#b77929"/><stop offset="1" stop-color="#f4d986"/></linearGradient></defs><path d="M50 3 94 26 94 84 50 113 6 84 6 26Z" fill="#112b4b" stroke="url(#medal)" stroke-width="4"/><path d="M50 8 89 29 89 82 50 108 11 82 11 29Z" fill="#224566" stroke="#ae2839" stroke-width="2"/><circle cx="50" cy="53" r="44" fill="#152d4b"/><path d="M12 106 Q17 83 32 71 L41 68 59 68 68 71 Q83 83 88 106Z" fill="#12375f" stroke="#e7b85f" stroke-width="3"/>
     <path d="M19 106 Q26 90 35 87 Q50 102 65 87 Q74 90 81 106" fill="#081e3c" opacity=".33"/>
-    <path d="M29 75 Q34 71 42 72 Q49 77 50 85 Q51 77 58 72 Q66 71 71 75" fill="none" stroke="#e1b562" stroke-width="2.5"/>
-    <path d="M31 80 Q31 73 39 71 Q48 68 50 81 Q52 68 61 71 Q69 73 69 80 Q65 94 50 94 Q35 94 31 80Z" fill="#12375f" stroke="#e8bb67" stroke-width="2"/>
-    <path d="M50 75v26" stroke="#ddb261" stroke-width="2"/>
+    <path d="M19 76 Q27 67 39 69 Q48 68 50 83 Q52 68 61 69 Q73 67 81 76" fill="none" stroke="#e1b562" stroke-width="2.5"/>
+    <path d="M20 80 Q20 69 36 68 Q49 67 50 82 Q51 67 64 68 Q80 69 80 80 Q75 95 62 94 Q53 91 50 85 Q47 91 38 94 Q25 95 20 80Z" fill="#12375f" stroke="#e8bb67" stroke-width="2"/>
+    <path d="M50 85v16" stroke="#ddb261" stroke-width="2"/>
     <circle cx="50" cy="84" r="2" fill="#b12439"/><circle cx="50" cy="91" r="2" fill="#b12439"/>
-    <path d="M36 72q14-7 28 0l-14 12z" fill="#081e3c" stroke="#e6b75f" stroke-width="2"/>
+    <path d="M37 70q13-5 26 0l-13 14z" fill="#081e3c" stroke="#e6b75f" stroke-width="2"/>
     <ellipse cx="50" cy="49" rx="15" ry="18" fill="#ad7454"/>
     <path d="M34 45 Q30 27 44 24 Q61 22 66 39 L64 54 60 35 Q51 39 39 35 L36 54Z" fill="#21171d"/>
     <path d="M39 49h5m12 0h5" stroke="#201820" stroke-width="2"/>
