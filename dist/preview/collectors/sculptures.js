@@ -50,7 +50,7 @@ export function makeWorkshop(environment) {
   for(let j=0;j<20;j++){const a=j*Math.PI/10;ell(g,Math.sin(a)*.418,.302,Math.cos(a)*.418,.008,.008,.008,M.goldLight)}
   for(let j=0;j<32;j++){const a=j*Math.PI/16;ell(g,Math.sin(a)*.382,.134,Math.cos(a)*.382,.006,.009,.006,j%4?M.gold:M.red)}
   ring(g,.347,.004,M.goldLight,0,.368);
-  const rank={p:'LCPL',n:'SGT',r:'MSGT',b:'CAPT',q:'COL',k:'4★ GEN'}[type];
+  const rank={p:'PFC',n:'SGT',r:'MSGT',b:'CAPT',q:'COL',k:'4★ GEN'}[type];
   // Large raised plaques on both sides, mounted beyond the curved pedestal.
   for(const a of [0,Math.PI]){
    const plaque=new T.Group();plaque.rotation.y=a;g.add(plaque);
@@ -116,11 +116,11 @@ export function makeWorkshop(environment) {
    const cuff=ring(body,.042,.008,M.gold,sign*.222,.992,.04);cuff.scale.z=.9;
    ell(body,sign*.222,.926,.047,.042,.058,.03,M.white);
    for(let f=0;f<3;f++)line(body,[[sign*.208+f*.009,.933,.074],[sign*.208+f*.009,.903,.072]],.002,u);
-   // Distinct sleeve insignia: two chevrons, three chevrons, officer bar,
+   // Distinct sleeve insignia: one PFC chevron, three sergeant chevrons, officer bars,
    // and four stars for the general. The pedestal gives the full rank.
    box(body,.109,.022,.055,M.gold,sign*.152,1.393,0);
    if(type==='p'||type==='n'){
-    for(let j=0;j<(type==='p'?2:3);j++)line(body,[[sign*.276,1.29-j*.031,-.03],[sign*.285,1.266-j*.031,.008],[sign*.276,1.29-j*.031,.046]],.009,M.goldLight);
+    for(let j=0;j<(type==='p'?1:3);j++)line(body,[[sign*.276,1.29-j*.031,-.03],[sign*.285,1.266-j*.031,.008],[sign*.276,1.29-j*.031,.046]],.009,M.goldLight);
     if(type==='n')for(let j=0;j<2;j++)line(body,[[sign*.277,1.16+j*.025,-.025],[sign*.286,1.14+j*.025,.006],[sign*.278,1.16+j*.025,.043]],.006,M.gold);
    }else if(type==='b'){
     // Captain's paired silver bars on each shoulder, above the red cuff braid.
@@ -417,6 +417,6 @@ export function makeWorkshop(environment) {
    for(let j=0;j<3;j++)line(plate,[[-.085,.555+j*.016,.401],[0,.579+j*.016,.401],[.085,.555+j*.016,.401]],.005,M.gold);
   }
  }
- function piece(type,color){const raw=new T.Group();base(raw,type);if(type==='r')tank(raw,color);else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,sculpture:true};return out}
+ function piece(type,color){const raw=new T.Group();base(raw,type);if(type==='r'){const raised=new T.Group();raw.add(raised);tank(raised,color);raised.scale.y=1.8;raised.position.y=-.365*.8;}else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,sculpture:true};return out}
  return {M,material,add,ell,box,cyl,ring,line,profile,star,text,insignia,bake,piece};
 }
