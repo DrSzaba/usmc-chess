@@ -183,6 +183,17 @@ export function makeWorkshop(environment) {
    line(body,[[-.31,1.01,.06],[-.27,.993,.082],[-.23,1.01,.06]],.009,M.gold);
    if(type==='k'){for(let j=0;j<4;j++)star(body,.022,-.09+j*.058,1.405,.093);for(let j=0;j<3;j++)ring(body,.019,.004,M.goldLight,.27,1.08+j*.04,.042)}
   }
+  if(type==='k'){
+   // The four-star general carries a wider gold shoulder braid, sash and medals.
+   for(const sign of [-1,1]){
+    box(body,.13,.026,.078,M.goldLight,sign*.158,1.41,.005);
+    for(let j=0;j<4;j++)star(body,.023,sign*.12+(j-1.5)*.028,1.43,.052,M.goldLight);
+    for(let j=0;j<4;j++)line(body,[[sign*.21,1.38,.02],[sign*(.22+j*.012),1.28,.10],[sign*(.13+j*.011),1.10,.144]],.005,M.goldLight);
+   }
+   line(body,[[-.16,1.37,.08],[.14,1.04,.17]],.022,M.gold);
+   line(body,[[-.16,1.37,.09],[.14,1.04,.18]],.007,M.goldLight);
+   for(let j=0;j<5;j++)ell(body,-.11+j*.035,1.175,.146,.013,.022,.008,j%2?M.ribbonBlue:M.goldLight);
+  }
   // Fine raised seams, collar braid, cuff studs and polished boot caps.
   for(const sign of [-1,1]){
    line(body,[[sign*.175,1.36,.073],[sign*.149,1.287,.109],[sign*.123,1.095,.107]],.003,M.goldLight);
@@ -207,6 +218,13 @@ export function makeWorkshop(environment) {
   const u=color==='w'?M.ivory:M.navy,skin=color==='w'?M.skinW:M.skinB;
   const rows=[[.379,0,0],[.38,.326,.297],[.43,.326,.297],[.55,.3,.278],[.70,.27,.25],[.86,.23,.22],[1.03,.185,.185],[1.17,.129,.12],[1.24,.118,.104],[1.33,.149,.106],[1.40,.164,.107],[1.45,.14,.085],[1.48,.06,.048]];
   profile(g,rows,u,72,.014);
+  // Tailored officer bodice with a distinctly fuller bust and narrow waist.
+  // Uniform fabric covers the contours; piping follows the raised seam.
+  for(const sign of [-1,1]){
+   ell(g,sign*.078,1.345,.086,.088,.083,.080,u);
+   line(g,[[sign*.012,1.425,.115],[sign*.075,1.414,.152],[sign*.148,1.365,.115]],.007,M.goldLight);
+   line(g,[[sign*.143,1.329,.111],[sign*.078,1.274,.139],[sign*.033,1.24,.126]],.006,M.gold);
+  }
   // Gold brocade follows the gown's volume, rather than floating in front of it.
   for(let j=0;j<14;j++){const a=j*Math.PI*2/14,points=rows.slice(1,10).map(([y,rx,rz])=>[Math.sin(a)*(rx+.005),y,Math.cos(a)*(rz+.005)]);line(g,points,j%2?.0035:.006,M.gold);
    for(let k=0;k<6;k++){const y=.46+k*.103,r=.326-(y-.43)*.25;const pts=[];for(let t=0;t<=16;t++){const b=t/16*Math.PI*2,aa=a+Math.sin(b)*.038;pts.push([Math.sin(aa)*(r+.005),y+Math.cos(b)*.032,Math.cos(aa)*(r*.93+.006)])}line(g,pts,.003,M.goldLight)}
