@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 116"><defs><linearGradient id="medal" x2="1" y2="1"><stop stop-color="#fff2c1"/><stop offset=".5" stop-color="#b77929"/><stop offset="1" stop-color="#f4d986"/></linearGradient></defs><path d="M50 3 94 26 94 84 50 113 6 84 6 26Z" fill="#112b4b" stroke="url(#medal)" stroke-width="4"/><path d="M50 8 89 29 89 82 50 108 11 82 11 29Z" fill="#224566" stroke="#ae2839" stroke-width="2"/><circle cx="50" cy="53" r="44" fill="#152d4b"/><path d="M19 105 Q17 77 30 69 L41 65 59 65 70 69 Q83 77 81 105Z" fill="#f5f0e2" stroke="#d8a74e" stroke-width="3"/>
+    <path d="M28 71 Q50 94 72 71" fill="none" stroke="#ad2635" stroke-width="4"/>
+    <path d="M34 70 63 103" stroke="#d9ac58" stroke-width="6"/>
+    <path d="M34 70 63 103" stroke="#fff2c1" stroke-width="1.5"/>
+    <path d="M37 66h26v10H37z" fill="#f5f0e2" stroke="#e9c578" stroke-width="2"/>
+    <ellipse cx="50" cy="50" rx="15" ry="17" fill="#55311e"/>
+    <path d="M33 39h34l-3 12H36z" fill="#f5f0e2" stroke="#d5a64a" stroke-width="2"/>
+    <path d="M26 44q24-10 48 0l-5 7H31z" fill="#c9bca5" stroke="#edc77b" stroke-width="2"/>
+    <path d="M35 30q15-7 30 0v10H35z" fill="#f5f0e2" stroke="#d5a64a" stroke-width="2"/>
+    <path d="M43 35q7-7 14 0l-7 6z" fill="#e9c36d"/>
+    <path d="M39 50h5m12 0h5" stroke="#1b1520" stroke-width="2.5"/>
+    <path d="M43 59q7 4 14 0" stroke="#512819" stroke-width="1.8"/>
+    <path d="M27 78q9 0 16 7m30-7q-9 0-16 7" stroke="#d8ac55" stroke-width="3" fill="none"/>
+    <path d="M24 84q8 1 18 9m34-9q-8 1-18 9" stroke="#e9c36d" stroke-width="1.5" fill="none"/>
+    <path d="M47 78h8v8h-8z" fill="#ae2735" stroke="#e9c36d"/>
+    <path d="M38 93h19" stroke="#e7c574" stroke-width="3"/>
+    <path d="M35 97h22" stroke="#a82336" stroke-width="2"/>
+    <text x="50" y="20" fill="#ffe2a0" font-size="12" font-family="Georgia" text-anchor="middle" letter-spacing="2">★★★★</text><path d="M18 106h64" stroke="#e8bf6d" stroke-width="3"/></svg>
