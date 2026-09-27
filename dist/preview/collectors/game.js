@@ -212,7 +212,7 @@ function render(){
  $('detail').textContent=game.isCheckmate()?'Checkmate. Start a new game for a rematch.':game.isDraw()?'The game has ended in a draw.':game.isCheck()?'Check — protect your king.':busy?`Dress blues are choosing a move at level ${$('level').value}.`:selected?`${ranks[game.get(selected).type]} · ${names[game.get(selected).type]} on ${selected}. Choose a highlighted square.`:'Select a piece to see its legal moves.';
  const featured=selected&&game.get(selected),showPortrait=flat&&featured&&['q','k'].includes(featured.type);
  $('portrait-card').hidden=!showPortrait;
- if(showPortrait){const role=featured.type==='k'?'general':'queen',side=featured.color==='w'?'white':'blue';$('portrait-image').src=`./${role}-${side}.svg`;$('portrait-image').alt=`${side} ${role} Marine portrait`;$('portrait-title').textContent=featured.type==='k'?'Four-Star General':'Colonel Queen';$('portrait-caption').textContent=`${side==='white'?'Dress whites':'Dress blues'} · ${selected}`}
+ if(showPortrait){const role=featured.type==='k'?'general':'queen',side=featured.color==='w'?'white':'blue';$('portrait-image').src=`./${role}-${side}.svg?v=regalia-24`;$('portrait-image').alt=`${side} ${role} Marine portrait`;$('portrait-title').textContent=featured.type==='k'?'Four-Star General':'Colonel Queen';$('portrait-caption').textContent=`${side==='white'?'Dress whites':'Dress blues'} · ${selected}`}
  $('undo').disabled=game.history().length===0;
  const hist=game.history();$('history').replaceChildren();for(let i=0;i<hist.length;i+=2){const li=document.createElement('li');li.textContent=hist[i].padEnd(9,' ')+(hist[i+1]||'');$('history').append(li)}$('history').scrollTop=$('history').scrollHeight;$('count').textContent=`${hist.length} half-moves`;
  const destinations=new Set(legal().map(m=>m.to)), last=game.history({verbose:true}).at(-1), focus=document.activeElement?.dataset.square;
@@ -244,7 +244,7 @@ let has3D=false;
  $('flip').onclick=()=>{flipped=!flipped;cameraReset();render()};$('reset-view').onclick=()=>cameraReset();
 render();
 try {
- const { createPresentation } = await import('./presentation.js?v=uniform-14');
+ const { createPresentation } = await import('./presentation.js?v=uniform-15');
  const view3D = await createPresentation({ stage: $('stage'), host: $('canvas'), game, choose, legal, selection:()=>selected, isFlat:()=>flat, isFlipped:()=>flipped, ranks, rankMarks });
  redraw3D=view3D.redraw; cameraReset=view3D.reset;
  for (const [id,fn] of Object.entries({'showcase':view3D.showcase,'overhead':view3D.overhead,'zoom-in':()=>view3D.zoom(.82),'zoom-out':()=>view3D.zoom(1.22),'inspect':()=>view3D.inspect(selected)})) $(id).onclick=fn;
