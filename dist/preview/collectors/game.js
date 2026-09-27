@@ -2,6 +2,8 @@ import { Chess } from '../../vendor/chess.js';
 const $=id=>document.getElementById(id), game=new Chess();
 const names={p:'Pawn',r:'Rook',n:'Knight',b:'Bishop',q:'Queen',k:'King'},ranks={p:'Lance Corporal',n:'Sergeant',b:'Captain',r:'Master Sergeant',q:'Colonel',k:'Four-Star General'},rankMarks={p:'LCPL',n:'SGT',b:'CAPT',r:'MSGT',q:'COL',k:'4★ GEN'},glyph={p:'♟',r:'♜',n:'♞',b:'♝',q:'♛',k:'♚'};
 let selected=null, flipped=false, flat=false, busy=false, timer=null, redraw3D=()=>{}, cameraReset=()=>{};
+function sizeFlatBoard(){const stage=$('stage'),size=Math.max(240,Math.floor(Math.min(stage.clientWidth*.94,stage.clientHeight-32,650)));$('flat').style.width=`${size}px`;$('flat').style.height=`${size}px`}
+new ResizeObserver(sizeFlatBoard).observe($('stage'));sizeFlatBoard();
 let audioContext=null,soundEnabled=true;
 const soundButton=$('sound'),testButton=$('sound-test'),soundState=$('sound-state');
 async function unlockAudio(){
@@ -25,7 +27,7 @@ soundButton.onclick=async()=>{
  soundState.textContent=soundEnabled?'Starting audio…':'Sound muted';
  if(soundEnabled){await unlockAudio();playCue('move')}
 };
-testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value;playCue(choice==='mate'?'mate':'capture',choice)};
+testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value;playCue(choice==='mate'?'mate':$('sound-action').value,choice)};
 let woodNoise=null;
 function noiseFor(ctx){
  if(woodNoise&&woodNoise.sampleRate===ctx.sampleRate)return woodNoise;
@@ -96,16 +98,26 @@ async function playCue(kind,piece='p'){
   gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(volume,at+.035);gain.gain.setValueAtTime(volume*.84,at+Math.max(.045,duration-.055));gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
   osc.connect(filter).connect(gain).connect(ctx.destination);osc.start(at);osc.stop(at+duration+.015);
  }
- function reveille(){
+ function reveille(offset=0){
   // Short bugle arrangement of the opening Reveille call; notes use the bugle's harmonic series.
   const G=392,C=523.25,E=659.25,highG=783.99;
   const notes=[[G,0,.16],[C,.18,.16],[E,.36,.17],[highG,.55,.31],[E,.9,.16],[C,1.08,.16],[G,1.26,.26],
    [C,1.6,.12],[E,1.74,.12],[highG,1.88,.32],[E,2.24,.13],[C,2.39,.13],[G,2.54,.28],
    [G,2.91,.15],[C,3.08,.15],[E,3.25,.16],[highG,3.43,.49]];
-  notes.forEach(([f,t,d])=>bugle(f,t,d,.19));drum(3.94,.55);
+  notes.forEach(([f,t,d])=>bugle(f,t+offset,d,.19));drum(3.94+offset,.55);
  }
  if(kind==='select'){woodenClack(0,.35,.72);return}
- if(kind==='move'){woodenClack(0,.9,1);return}
+ if(kind==='move'||kind==='check'){
+  // Movement has its own short signature for every rank, even without a capture.
+  if(piece==='p'){woodenClack(0,.72,.73);burst(.10,.055,.13,1900,1.1)}
+  else if(piece==='n'){woodenClack(0,.8,.67);woodenClack(.13,.63,.72);woodenClack(.27,.72,.68)}
+  else if(piece==='b'){drum(0,.56);drum(.16,.42);woodenClack(.27,.68,.9)}
+  else if(piece==='r'){burst(0,.23,.12,170,.55);woodenClack(.18,.88,1.43)}
+  else if(piece==='q'){drum(0,.42);drum(.09,.49);drum(.18,.68);metal(.26,.45)}
+  else {drum(0,.78);drum(.22,.88);metal(.34,.72)}
+  if(kind==='check'){drum(.53,.75);drum(.68,1.02)}
+  return;
+ }
  if(kind==='capture'){
   // Six distinct field and ceremonial effects. Bugle notes belong to checkmate only.
   if(piece==='p'){
@@ -128,15 +140,18 @@ async function playCue(kind,piece='p'){
   woodenClack(0,1,1.12);woodenClack(.21,1.15,1.27);return;
  }
  if(kind==='mate'){
-  woodenClack(0,1,1.25);reveille();return;
+  drum(0,1.2);drum(.22,1.35);drum(.44,1.5);reveille(.83);return;
  }
 }
 function soundForMove(move){
  // Let the final position determine the cue, even for the computer's move.
- if(game.isCheckmate())playCue('mate');
+ if(game.isCheckmate()){
+  playCue('mate');
+  if(soundEnabled&&'speechSynthesis' in window)try{speechSynthesis.cancel();const call=new SpeechSynthesisUtterance(`Checkmate. ${game.turn()==='w'?'Dress blues':'White'} wins.`);call.rate=.92;call.volume=.9;speechSynthesis.speak(call)}catch(e){console.warn('Spoken checkmate unavailable',e)}
+ }
  else if(move.captured)playCue('capture',move.piece);
- else if(game.isCheck())playCue('check');
- else playCue('move');
+ else if(game.isCheck())playCue('check',move.piece);
+ else playCue('move',move.piece);
 }
 const square=(r,c)=>'abcdefgh'[c]+(8-r);
 function legal(){return selected?game.moves({square:selected,verbose:true}):[]}
@@ -150,7 +165,9 @@ function choose(s){
 }
 function render(){
  const team=game.turn()==='w'?'White':'Dress blues';
- $('status').textContent=game.isCheckmate()?`${game.turn()==='w'?'Dress blues':'White'} win`:game.isStalemate()?'Stalemate':game.isDraw()?'Draw':busy?'Computer thinking…':`${team} to move`;
+ const winner=game.turn()==='w'?'Dress blues':'White';
+ $('status').textContent=game.isCheckmate()?`CHECKMATE — ${winner} wins`:game.isStalemate()?'Stalemate':game.isDraw()?'Draw':busy?'Computer thinking…':`${team} to move`;
+ $('end-banner').hidden=!game.isCheckmate();$('end-winner').textContent=game.isCheckmate()?`${winner.toUpperCase()} WINS`:'';
  $('detail').textContent=game.isCheckmate()?'Checkmate. Start a new game for a rematch.':game.isDraw()?'The game has ended in a draw.':game.isCheck()?'Check — protect your king.':busy?'Dress blues are choosing their move.':selected?`${ranks[game.get(selected).type]} · ${names[game.get(selected).type]} on ${selected}. Choose a highlighted square.`:'Select a piece to see its legal moves.';
  $('undo').disabled=game.history().length===0;
  const hist=game.history();$('history').replaceChildren();for(let i=0;i<hist.length;i+=2){const li=document.createElement('li');li.textContent=hist[i].padEnd(9,' ')+(hist[i+1]||'');$('history').append(li)}$('history').scrollTop=$('history').scrollHeight;$('count').textContent=`${hist.length} half-moves`;
@@ -162,8 +179,8 @@ const values={p:100,n:320,b:330,r:500,q:900,k:0};
 function evaluate(){if(game.isCheckmate())return game.turn()==='w'?100000:-100000;if(game.isDraw())return 0;let n=0;game.board().forEach((row,r)=>row.forEach((p,c)=>{if(p)n+=(p.color==='b'?1:-1)*(values[p.type]+(p.type==='p'?(p.color==='b'?r:7-r)*5:0)+(3.5-Math.abs(c-3.5))*2)}));return n}
 function search(depth,a,b){if(!depth||game.isGameOver())return evaluate();const max=game.turn()==='b';let best=max?-Infinity:Infinity;const moves=game.moves({verbose:true}).sort((x,y)=>(values[y.captured]||0)-(values[x.captured]||0));for(const m of moves){game.move(m);const v=search(depth-1,a,b);game.undo();best=max?Math.max(best,v):Math.min(best,v);if(max)a=Math.max(a,best);else b=Math.min(b,best);if(b<=a)break}return best}
 function scheduleCPU(){if($('mode').value!=='cpu'||game.turn()!=='b'||game.isGameOver())return;busy=true;render();timer=setTimeout(()=>{try{let best=-Infinity,move=null;for(const m of game.moves({verbose:true})){game.move(m);const v=search(1,-Infinity,Infinity);game.undo();if(v>best){best=v;move=m}}if(move){game.move(move);soundForMove(move)}}finally{busy=false;timer=null;render()}},420)}
-function cancel(){clearTimeout(timer);timer=null;busy=false;selected=null}
-function setView(){ $('canvas').hidden=flat;$('flat').hidden=!flat;$('view').textContent=flat?'Use 3D board':'Use 2D board';$('instructions').textContent=flat?'Select a piece, then a highlighted square. Arrow keys navigate the board.':'Select a piece, then a highlighted square. Drag to rotate the 3D board and scroll to zoom.';render() }
+function cancel(){clearTimeout(timer);timer=null;busy=false;selected=null;if('speechSynthesis' in window)speechSynthesis.cancel()}
+function setView(){ $('canvas').hidden=flat;$('flat').hidden=!flat;$('view').textContent=flat?'Use 3D board':'Use 2D board';$('instructions').textContent=flat?'Select a piece, then a highlighted square. Arrow keys navigate the board.':'Select a piece, then a highlighted square. Drag to rotate the 3D board and scroll to zoom.';sizeFlatBoard();render() }
 let has3D=false;
  $('view').onclick=()=>{if(has3D){flat=!flat;setView()}};
  $('new').onclick=()=>{if(game.history().length&&!confirm('Start a new game? The current match will be cleared.'))return;cancel();game.reset();render()};
