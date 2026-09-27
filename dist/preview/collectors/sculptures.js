@@ -193,6 +193,15 @@ export function makeWorkshop(environment) {
    line(body,[[-.16,1.37,.08],[.14,1.04,.17]],.022,M.gold);
    line(body,[[-.16,1.37,.09],[.14,1.04,.18]],.007,M.goldLight);
    for(let j=0;j<5;j++)ell(body,-.11+j*.035,1.175,.146,.013,.022,.008,j%2?M.ribbonBlue:M.goldLight);
+   // Tall ceremonial crown, with four prominent points above the dress cover.
+   profile(body,[[1.777,.144,.127],[1.812,.151,.135],[1.838,.143,.127]],M.gold,64);
+   ring(body,.147,.011,M.goldLight,0,1.814).scale.z=.91;
+   for(let j=0;j<8;j++){
+    const a=j*Math.PI/4, x=Math.sin(a)*.139,z=Math.cos(a)*.122;
+    line(body,[[x,1.828,z],[x*1.03,1.976+(j%2?.02:.105),z*1.03],[x*.78,1.857,z*.78]],.012,M.goldLight);
+    ell(body,x*1.03,1.986+(j%2?.02:.105),z*1.03,.015,.018,.014,j%2?M.gem:M.goldLight);
+   }
+   for(let j=-1;j<=2;j++)star(body,.021,j*.055-.027,1.814,.139,M.goldLight);
   }
   // Fine raised seams, collar braid, cuff studs and polished boot caps.
   for(const sign of [-1,1]){
@@ -216,14 +225,15 @@ export function makeWorkshop(environment) {
  }
  function queen(g,color){
   const u=color==='w'?M.ivory:M.navy,skin=color==='w'?M.skinW:M.skinB;
-  const rows=[[.379,0,0],[.38,.326,.297],[.43,.326,.297],[.55,.3,.278],[.70,.27,.25],[.86,.23,.22],[1.03,.185,.185],[1.17,.129,.12],[1.24,.118,.104],[1.33,.149,.106],[1.40,.164,.107],[1.45,.14,.085],[1.48,.06,.048]];
+  const rows=[[.379,0,0],[.38,.35,.317],[.43,.35,.317],[.55,.32,.29],[.70,.28,.26],[.86,.23,.22],[1.03,.165,.16],[1.17,.108,.105],[1.24,.105,.09],[1.33,.18,.13],[1.40,.218,.14],[1.45,.17,.10],[1.48,.06,.048]];
   profile(g,rows,u,72,.014);
   // Tailored officer bodice with a distinctly fuller bust and narrow waist.
   // Uniform fabric covers the contours; piping follows the raised seam.
   for(const sign of [-1,1]){
-   ell(g,sign*.078,1.345,.086,.088,.083,.080,u);
-   line(g,[[sign*.012,1.425,.115],[sign*.075,1.414,.152],[sign*.148,1.365,.115]],.007,M.goldLight);
-   line(g,[[sign*.143,1.329,.111],[sign*.078,1.274,.139],[sign*.033,1.24,.126]],.006,M.gold);
+   ell(g,sign*.103,1.344,.128,.119,.115,.123,u);
+   ell(g,sign*.104,1.349,.212,.096,.091,.044,u);
+   line(g,[[sign*.014,1.452,.126],[sign*.104,1.438,.226],[sign*.216,1.37,.146]],.009,M.goldLight);
+   line(g,[[sign*.216,1.324,.154],[sign*.123,1.256,.133],[sign*.025,1.222,.104]],.007,M.gold);
   }
   // Gold brocade follows the gown's volume, rather than floating in front of it.
   for(let j=0;j<14;j++){const a=j*Math.PI*2/14,points=rows.slice(1,10).map(([y,rx,rz])=>[Math.sin(a)*(rx+.005),y,Math.cos(a)*(rz+.005)]);line(g,points,j%2?.0035:.006,M.gold);
