@@ -101,6 +101,16 @@ export function makeWorkshop(environment) {
    ring(body,.07,.004,M.goldLight,x,.468);
   }
   profile(body,female?[[.94,.17,.10],[.98,.17,.107],[1.07,.125,.091],[1.17,.14,.101],[1.31,.173,.107],[1.37,.166,.101],[1.40,.115,.076],[1.41,.066,.055]]:[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,72);
+  if(female){
+   // Sculpt the same full, uniform-covered bust as the Queen, scaled to a PFC.
+   // A narrow waist and flared jacket hem keep the silhouette distinct in play.
+   for(const sign of [-1,1]){
+    ell(body,sign*.085,1.295,.105,.105,.105,.105,u);
+    ell(body,sign*.085,1.30,.175,.083,.079,.047,u);
+    line(body,[[sign*.012,1.391,.098],[sign*.085,1.372,.202],[sign*.178,1.31,.124]],.006,M.goldLight);
+   }
+   profile(body,[[.955,.177,.113],[1.018,.168,.11],[1.09,.124,.094]],u,48);
+  }
   cyl(body,.069,.065,.07,skin,0,1.44,0,32);
   // Standing collar, red piping, belt and a small raised buckle.
   profile(body,[[1.389,.075,.061],[1.447,.074,.060],[1.452,.07,.058]],u,32);
