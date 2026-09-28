@@ -4,7 +4,10 @@ const names={p:'Pawn',r:'Rook',n:'Knight',b:'Bishop',q:'Queen',k:'King'},ranks={
 let selected=null, flipped=false, flat=false, busy=false, timer=null, aiWorker=null, aiJob=0, redraw3D=()=>{}, cameraReset=()=>{};
 function sizeFlatBoard(){const stage=$('stage'),sideSpace=stage.clientWidth<650?82:158,size=Math.max(228,Math.floor(Math.min(stage.clientWidth-sideSpace,stage.clientHeight-105,650)));$('flat').style.width=`${size}px`;$('flat').style.height=`${size}px`}
 new ResizeObserver(sizeFlatBoard).observe($('stage'));sizeFlatBoard();
-let audioContext=null,soundEnabled=true;
+let audioContext=null,soundEnabled=true,apply3DBoard=()=>{};
+const boardStyle=$('board-style');
+try{const saved=localStorage.getItem('usmc-board-style');if([...boardStyle.options].some(o=>o.value===saved))boardStyle.value=saved}catch{};
+$('stage').dataset.board=boardStyle.value;
 const soundButton=$('sound'),testButton=$('sound-test'),soundState=$('sound-state');
 const marineTerms=[
  'Semper Fi','Semper Fidelis','Oorah','Devil Dog','Leatherneck','The Few, The Proud','Honor, Courage, Commitment','First to fight',
@@ -58,12 +61,13 @@ soundButton.onclick=async()=>{
  soundButton.textContent=soundEnabled?'Sound on':'Sound off';
  soundButton.setAttribute('aria-pressed',String(soundEnabled));
  soundState.textContent=soundEnabled?'Starting audio…':'Sound muted';
- soundBanner(soundEnabled?'SOUND ON · Wooden moves, spoken Marine captures':'SOUND OFF · Press Sound on to hear the pieces');
+ soundBanner(soundEnabled?'SOUND ON · Board-matched moves, spoken Marine captures':'SOUND OFF · Press Sound on to hear the pieces');
  if(!soundEnabled&&'speechSynthesis' in window)speechSynthesis.cancel();
  if(soundEnabled){await unlockAudio();playCue('move')}
 };
-testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value,action=$('sound-action').value;if(choice==='mate'){soundBanner('CHECKMATE · Reveille');playCue('mate')}else if(action==='capture')announceCapture(choice);else{soundBanner(`${names[choice]} MOVE · Wooden cue`);playCue('move',choice)}};
-$('board-tone').onchange=()=>{const label=$('board-tone').selectedOptions[0].textContent;soundBanner(`BOARD SOUND · ${label}`);playCue('move','p')};
+testButton.onclick=()=>{if(!soundEnabled){soundEnabled=true;soundButton.textContent='Sound on';soundButton.setAttribute('aria-pressed','true')}const choice=$('sound-preview').value,action=$('sound-action').value;if(choice==='mate'){soundBanner('CHECKMATE · Reveille');playCue('mate')}else if(action==='capture')announceCapture(choice);else{soundBanner(`${names[choice]} MOVE · Board cue`);playCue('move',choice)}};
+boardStyle.onchange=()=>{const style=boardStyle.value;$('stage').dataset.board=style;apply3DBoard(style);try{localStorage.setItem('usmc-board-style',style)}catch{}soundBanner(`BOARD · ${boardStyle.selectedOptions[0].textContent}`);playCue('move','p')};
+$('board-tone').onchange=()=>{soundBanner(`SOUND · ${$('board-tone').selectedOptions[0].textContent}`);playCue('move','p')};
 let woodNoise=null;
 function noiseFor(ctx){
  if(woodNoise&&woodNoise.sampleRate===ctx.sampleRate)return woodNoise;
@@ -79,7 +83,9 @@ async function playCue(kind,piece='p'){
  const start=ctx.currentTime+.012,noise=noiseFor(ctx),master=ctx.createDynamicsCompressor(),level=ctx.createGain();
  master.threshold.value=-20;master.knee.value=20;master.ratio.value=3;master.attack.value=.003;master.release.value=.18;level.gain.value=volume();master.connect(level).connect(ctx.destination);
  function woodenClack(delay=0,weight=1,depth=1){
-  const tone=$('board-tone').value;
+  const tone=$('board-tone').value==='parade'?'parade':boardStyle.value;
+  if(tone==='steel'){metalImpact(delay,weight);return}
+  if(tone==='glass'){glassImpact(delay,weight);return}
   depth*=tone==='mahogany'?1.42:tone==='parade'?.66:1;
   weight*=tone==='mahogany'?1.12:tone==='parade'?.82:1;
   const at=start+delay;
@@ -102,6 +108,27 @@ async function playCue(kind,piece='p'){
    gain.gain.exponentialRampToValueAtTime(.0001,at+decay);
    osc.connect(gain).connect(master);
    osc.start(at);osc.stop(at+decay+.01);
+  }
+ }
+ function metalImpact(delay=0,weight=1){
+  const at=start+delay;
+  const strike=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+  strike.buffer=noise;filter.type='highpass';filter.frequency.value=1250;
+  gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.18*weight,at+.002);
+  gain.gain.exponentialRampToValueAtTime(.0001,at+.075);
+  strike.connect(filter).connect(gain).connect(master);strike.start(at);strike.stop(at+.09);
+  for(const [freq,vol,decay] of [[390,.085,.29],[678,.067,.22],[1163,.04,.16]]){
+   const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sine';osc.frequency.value=freq;
+   g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol*weight,at+.003);
+   g.gain.exponentialRampToValueAtTime(.0001,at+decay);osc.connect(g).connect(master);osc.start(at);osc.stop(at+decay+.01);
+  }
+ }
+ function glassImpact(delay=0,weight=1){
+  const at=start+delay;
+  for(const [freq,vol,decay] of [[740,.068,.39],[1130,.040,.32],[1690,.024,.24],[2320,.011,.16]]){
+   const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sine';osc.frequency.value=freq;
+   g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol*weight,at+.002);
+   g.gain.exponentialRampToValueAtTime(.0001,at+decay);osc.connect(g).connect(master);osc.start(at);osc.stop(at+decay+.01);
   }
  }
  function drum(delay=0,weight=1){
@@ -191,8 +218,8 @@ function soundForMove(move){
   speak(`Checkmate. ${game.turn()==='w'?'Dress blues':'White'} wins.`);
  }
  else if(move.captured)announceCapture(move.piece);
- else if(game.isCheck()){soundBanner(`${names[move.piece]} CHECK · Wooden cue`);playCue('check',move.piece)}
- else {soundBanner(`${names[move.piece]} MOVE · Wooden cue`);playCue('move',move.piece)}
+ else if(game.isCheck()){soundBanner(`${names[move.piece]} CHECK · Board cue`);playCue('check',move.piece)}
+ else {soundBanner(`${names[move.piece]} MOVE · Board cue`);playCue('move',move.piece)}
 }
 const square=(r,c)=>'abcdefgh'[c]+(8-r);
 function legal(){return selected?game.moves({square:selected,verbose:true}):[]}
@@ -244,9 +271,9 @@ let has3D=false;
  $('flip').onclick=()=>{flipped=!flipped;cameraReset();render()};$('reset-view').onclick=()=>cameraReset();
 render();
 try {
- const { createPresentation } = await import('./presentation.js?v=uniform-15');
+ const { createPresentation } = await import('./presentation.js?v=finishes-25');
  const view3D = await createPresentation({ stage: $('stage'), host: $('canvas'), game, choose, legal, selection:()=>selected, isFlat:()=>flat, isFlipped:()=>flipped, ranks, rankMarks });
- redraw3D=view3D.redraw; cameraReset=view3D.reset;
+ redraw3D=view3D.redraw; cameraReset=view3D.reset;apply3DBoard=view3D.setBoardStyle;apply3DBoard(boardStyle.value);
  for (const [id,fn] of Object.entries({'showcase':view3D.showcase,'overhead':view3D.overhead,'zoom-in':()=>view3D.zoom(.82),'zoom-out':()=>view3D.zoom(1.22),'inspect':()=>view3D.inspect(selected)})) $(id).onclick=fn;
  has3D=true;$('loading').hidden=true;render();
 } catch(e) {
