@@ -224,3 +224,16 @@ aside select:focus,aside select:hover {border-color:#f4d389;box-shadow:0 0 0 2px
 #coffee-cheer {position:fixed;z-index:100;top:92px;right:3.5%;padding:14px 23px;border:2px solid #f4d58a;border-radius:9px;background:#112a47;color:#ffdf8e;font:900 24px Impact,system-ui,sans-serif;letter-spacing:.12em;box-shadow:0 12px 30px #0009}
 @media(max-width:760px){.brand-title{font-size:29px}.seal{width:52px;height:52px}.seal span:nth-child(1){top:4px;left:8px;font-size:17px}.seal span:nth-child(2){top:4px;right:8px;font-size:17px}.seal span:nth-child(3){bottom:2px;left:16px;font-size:22px}.support{white-space:normal;line-height:1.2}}
 @media(max-width:410px){header{flex-wrap:wrap}.seal{display:block}.support{margin-left:auto}.brand-title{font-size:26px}}
+
+/* Full royal figures, Marine scarlet and gold lettering, and ceremonial insignia. */
+header{border-bottom:4px solid #d5a633;background:linear-gradient(180deg,#1c3552,#101d30);box-shadow:inset 0 -2px #a9192c}
+.brand-title{color:#d72335;-webkit-text-stroke:.7px #f6cf62;text-shadow:0 2px #531019,2px 3px #f6c650,0 5px 8px #000b;border:2px solid #d9ad44;border-radius:4px;padding:7px 13px 5px;background:#122840;box-shadow:inset 0 0 0 2px #9e1c2d}
+.brand-title b{color:#ffd263}
+.brand-title small{color:#ffe1a0;-webkit-text-stroke:0}
+.seal{width:112px;height:112px;display:grid;place-items:center;overflow:hidden;border:4px double #f0c65c;box-shadow:inset 0 0 0 4px #a51e2b,0 4px 13px #0009}
+.seal img{width:100%;height:100%;object-fit:contain;padding:8px 2px}
+.marine-header-mark{display:flex;align-items:center;gap:8px;color:#f5ca6b;text-align:center;font:700 11px/1.5 Georgia,serif;letter-spacing:.08em}
+.marine-header-mark img{width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 1px 3px #000)}
+@media(max-width:1000px){.marine-header-mark{display:none}}
+@media(max-width:760px){.seal{width:77px;height:77px}.brand-title{font-size:27px;padding:5px 7px}.brand-title small{font-size:7px;letter-spacing:.1em}}
+@media(max-width:410px){.seal{display:grid;width:67px;height:67px}.brand-title{font-size:22px}}

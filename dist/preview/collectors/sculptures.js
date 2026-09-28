@@ -81,7 +81,7 @@ export function makeWorkshop(environment) {
   if(female){ell(head,0,.025,-.09,.12,.13,.052,M.hair);ell(head,0,-.025,-.14,.075,.078,.063,M.hair);for(const sign of [-1,1]){ell(head,sign*.11,-.077,.012,.009,.019,.009,M.goldLight)}}
   return head;
  }
- function marine(g,type,color){
+ function marine(g,type,color,female=false){
   const u=color==='w'?M.ivory:M.navy,skin=color==='w'?M.skinW:M.skinB;
   const pants=color==='w'?M.trouserRed:M.trouserWhite;
   const body=new T.Group();g.add(body);const senior=type!=='p';
@@ -100,7 +100,7 @@ export function makeWorkshop(environment) {
    line(body,[[x,.50,.061],[x,.74,.072],[x,1.00,.085]],.003,color==='w'?M.red:M.trouserWhite);
    ring(body,.07,.004,M.goldLight,x,.468);
   }
-  profile(body,[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,72);
+  profile(body,female?[[.94,.17,.10],[.98,.17,.107],[1.07,.125,.091],[1.17,.14,.101],[1.31,.173,.107],[1.37,.166,.101],[1.40,.115,.076],[1.41,.066,.055]]:[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,72);
   cyl(body,.069,.065,.07,skin,0,1.44,0,32);
   // Standing collar, red piping, belt and a small raised buckle.
   profile(body,[[1.389,.075,.061],[1.447,.074,.060],[1.452,.07,.058]],u,32);
@@ -138,7 +138,18 @@ export function makeWorkshop(environment) {
   for(let j=0;j<(senior?9:6);j++)box(body,.021,.013,.008,ribbons[j],-.127+(j%3)*.025,1.30-Math.floor(j/3)*.016,.119);
   box(body,.069,.011,.009,M.gold,.095,1.292,.123);
   for(let i=0;i<(senior?3:1);i++){const x=-.118+i*.031;box(body,.015,.027,.007,M.ribbonBlue,x,1.224,.133);ell(body,x,1.202,.137,.014,.017,.005,M.gold)}
-  const head=face(body,skin,1.607);
+  const head=face(body,skin,1.607,female);
+  if(female){
+   ell(body,0,1.595,-.135,.10,.115,.055,M.hair);
+   ell(body,0,1.50,-.168,.072,.09,.048,M.hair);
+  }
+  // A readable raised rank plate sits on the back of the uniform as well as the pedestal.
+  const backRank={p:'PFC',b:'CAPT',k:'4★ GEN'}[type];
+  if(backRank){
+   box(body,.225,.11,.015,M.gold,0,1.255,-.125);
+   box(body,.211,.096,.018,M.navy,0,1.255,-.136);
+   text(body,backRank,.195,.081,0,1.255,-.149,Math.PI);
+  }
   // Dimensional headwear, band, brim and raised insignia.
   if(type==='b'){
    // Gentleman's Tyrolean hat: short tapered crown, pinched top, swept
@@ -457,6 +468,6 @@ export function makeWorkshop(environment) {
    }
   }
  }
- function piece(type,color){const raw=new T.Group();base(raw,type);if(type==='r'){const raised=new T.Group();raw.add(raised);tank(raised,color);raised.scale.y=1.8;raised.position.y=-.365*.8;}else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,sculpture:true};return out}
+ function piece(type,color,female=false){const raw=new T.Group();base(raw,type);if(type==='r'){const raised=new T.Group();raw.add(raised);tank(raised,color);raised.scale.y=1.8;raised.position.y=-.365*.8;}else if(type==='n')horse(raw,color);else if(type==='q')queen(raw,color);else marine(raw,type,color,female);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,female,sculpture:true};return out}
  return {M,material,add,ell,box,cyl,ring,line,profile,star,text,insignia,bake,piece};
 }
