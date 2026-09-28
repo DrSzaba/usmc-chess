@@ -173,3 +173,18 @@ aside .secondary #view {border:1px solid #ad884d;background:linear-gradient(165d
 .portrait-card img {width:106px;height:124px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 4px #0007)}
 .portrait-card strong {display:block;font:700 15px/1.2 Georgia,serif}
 .portrait-card span {display:block;margin-top:6px;color:#d8dce5;font-size:11px}
+
+/* Selectable board finishes preserve the Marine case and piece artwork. */
+#board-style {grid-column:1 / -1}
+#stage[data-board="mahogany"].flat-mode {background:radial-gradient(circle,#b69072,#4a2520 75%,#1d1518)}
+#stage[data-board="mahogany"] #flat {background:linear-gradient(135deg,#ad704e,#3a1516 32%,#823832 66%,#d29a65);border-color:#c79c65}
+#stage[data-board="mahogany"] .sq.light {background:radial-gradient(circle at 24% 15%,#f4d4a5,#a95e3b 55%,#5a2a25)}
+#stage[data-board="mahogany"] .sq.dark {background:radial-gradient(circle at 24% 15%,#34465e,#172639 60%,#101621)}
+#stage[data-board="steel"].flat-mode {background:radial-gradient(circle,#d1dae1,#667785 70%,#243644)}
+#stage[data-board="steel"] #flat {background:linear-gradient(135deg,#eef2f0,#7d929e 20%,#243a4b 48%,#b7c4c9 76%,#566c7a);border-color:#bccbd1;box-shadow:0 20px 32px #0715219c,0 0 0 4px #182c3b,0 0 0 9px #d8e2e2,inset 0 0 0 3px #f6fcf8}
+#stage[data-board="steel"] .sq.light {background:linear-gradient(145deg,#f0f3ef,#9baab0 52%,#758e9b)}
+#stage[data-board="steel"] .sq.dark {background:linear-gradient(145deg,#355267,#1c354b 50%,#102133)}
+#stage[data-board="glass"].flat-mode {background:radial-gradient(circle,#e6f6fb,#8ab8c9 70%,#31536d)}
+#stage[data-board="glass"] #flat {background:linear-gradient(135deg,#f7ffff,#94bfcc 24%,#1d5876 55%,#d7f6f6 85%);border-color:#d7f3fb;box-shadow:0 20px 35px #12394c99,0 0 0 4px #2f7392,0 0 0 9px #eafcff,inset 0 0 0 3px #fff}
+#stage[data-board="glass"] .sq.light {background:radial-gradient(circle at 20% 12%,#ffffff,#d1f0f1 48%,#8fbdcd);box-shadow:inset 0 0 8px #fff}
+#stage[data-board="glass"] .sq.dark {background:radial-gradient(circle at 20% 12%,#578ba5,#255474 48%,#0d2d49);box-shadow:inset 0 0 8px #9fe3ee66}
