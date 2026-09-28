@@ -9,6 +9,11 @@ const boardStyle=$('board-style');
 try{const saved=localStorage.getItem('usmc-board-style');if([...boardStyle.options].some(o=>o.value===saved))boardStyle.value=saved}catch{};
 $('stage').dataset.board=boardStyle.value;
 const soundButton=$('sound'),testButton=$('sound-test'),soundState=$('sound-state');
+let cheerTimer;
+$('coffee-button').addEventListener('click',()=>{
+ const cheer=$('coffee-cheer');cheer.hidden=false;clearTimeout(cheerTimer);cheerTimer=setTimeout(()=>cheer.hidden=true,2500);
+ if('speechSynthesis' in window){try{speechSynthesis.cancel();const call=new SpeechSynthesisUtterance('Ooh rah!');call.lang='en-US';call.rate=.9;call.pitch=.85;call.volume=Math.max(.5,volume());speechSynthesis.speak(call)}catch(e){console.warn('Cheer unavailable',e)}}
+});
 const marineTerms=[
  'Semper Fi','Semper Fidelis','Oorah','Devil Dog','Leatherneck','The Few, The Proud','Honor, Courage, Commitment','First to fight',
  'Every Marine a rifleman','Adapt and overcome','Improvise, adapt, overcome','No Marine left behind','Esprit de corps','Tun Tavern','Chesty Puller','The Crucible',

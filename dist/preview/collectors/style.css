@@ -201,3 +201,26 @@ aside .secondary #view {border:1px solid #ad884d;background:linear-gradient(165d
 .promotion-choices button {font-size:23px}.promotion-choices small {font-size:13px}
 .promotion-choices button:hover,.promotion-choices button:focus-visible {background:#a4733c;outline:3px solid #fff0bb}
 #promotion-cancel {margin-top:18px;font-size:14px;background:#17283c}
+
+/* Make native option lists and their closed controls legible on Windows too. */
+aside select {appearance:none;color-scheme:dark;color:#fffaf0;background-color:#10233d;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='12' viewBox='0 0 18 12'%3E%3Cpath d='m2 2 7 7 7-7' fill='none' stroke='%23f6d58c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),linear-gradient(165deg,#294364,#10233d);
+ background-position:right 13px center,center;background-repeat:no-repeat;padding-right:40px;min-height:45px}
+aside select option,aside select optgroup {background:#10233d;color:#fffaf0;font-weight:600}
+aside select:focus,aside select:hover {border-color:#f4d389;box-shadow:0 0 0 2px #f4d38955}
+
+/* Dress-blue title and a three-queen medallion. */
+.brand {gap:15px}
+.brand-title {font-family:Impact,'Arial Narrow',system-ui,sans-serif;font-stretch:condensed;font-size:clamp(28px,3vw,49px);font-weight:900;line-height:1;letter-spacing:.075em;
+ color:#e9e5d7;text-shadow:0 2px #7b1428,2px 3px #0b263f,0 5px 8px #000a}
+.brand-title b {color:#e5b968;font-weight:900}
+.brand-title small {font:700 9px/2 system-ui,sans-serif;letter-spacing:.25em;text-shadow:none;color:#d8bb81}
+.seal {position:relative;flex:none;width:70px;height:70px;border:3px double #e6c779;background:radial-gradient(circle at 35% 20%,#49638a,#102c4b 58%,#0b1728);box-shadow:inset 0 0 0 3px #951c35,0 4px 13px #0009}
+.seal span {position:absolute;line-height:1;color:#f4d68f;text-shadow:1px 2px #391323}
+.seal span:nth-child(1) {top:6px;left:12px;font-size:22px}
+.seal span:nth-child(2) {top:6px;right:12px;font-size:22px}
+.seal span:nth-child(3) {bottom:4px;left:22px;font-size:29px}
+.support {font-weight:800;color:#f7ddaa;border:2px solid #d6ac60;background:linear-gradient(145deg,#173d60,#8e2737);box-shadow:0 3px 10px #0008;white-space:nowrap}
+#coffee-cheer {position:fixed;z-index:100;top:92px;right:3.5%;padding:14px 23px;border:2px solid #f4d58a;border-radius:9px;background:#112a47;color:#ffdf8e;font:900 24px Impact,system-ui,sans-serif;letter-spacing:.12em;box-shadow:0 12px 30px #0009}
+@media(max-width:760px){.brand-title{font-size:29px}.seal{width:52px;height:52px}.seal span:nth-child(1){top:4px;left:8px;font-size:17px}.seal span:nth-child(2){top:4px;right:8px;font-size:17px}.seal span:nth-child(3){bottom:2px;left:16px;font-size:22px}.support{white-space:normal;line-height:1.2}}
+@media(max-width:410px){header{flex-wrap:wrap}.seal{display:block}.support{margin-left:auto}.brand-title{font-size:26px}}

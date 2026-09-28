@@ -4,15 +4,16 @@
  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
  <title>USMC Chess · Collector's Edition · El Szaba</title>
  <meta name="description" content="Play El Szaba's Marine Corps inspired chess game. Sculpted 3D figures, a polished ceremonial board, and a complete game against a friend or computer.">
- <link rel="stylesheet" href="style.css?v=finishes-25">
+ <link rel="stylesheet" href="style.css?v=header-27">
  <script type="importmap">{"imports":{"three":"../../vendor/three.module.js"}}</script>
 </head>
 <body>
  <header>
-  <a class="brand" href="./" aria-label="USMC Chess home"><span class="seal">♜</span><span>USMC <b>CHESS</b><small>THE COLLECTOR'S EDITION</small></span></a>
+  <a class="brand" href="./" aria-label="USMC Chess home"><span class="seal" aria-hidden="true"><span>♛</span><span>♛</span><span>♛</span></span><span class="brand-title">USMC <b>CHESS</b><small>THE COLLECTOR'S EDITION</small></span></a>
   <div class="maker">Designed for the game.<br><strong>Built with Semper Fi spirit.</strong></div>
-  <a class="support" href="https://cash.app/$Szaba" target="_blank" rel="noopener noreferrer">Support El Szaba ↗</a>
+  <a class="support" id="coffee-button" href="https://cash.app/$Szaba" target="_blank" rel="noopener noreferrer">Buy Dr. Szaba a Coffee ↗</a>
  </header>
+ <div id="coffee-cheer" role="status" aria-live="polite" hidden>OOOH RAH!</div>
  <main>
   <section class="arena" aria-label="Chess game">
    <div class="arena-top"><div><span class="eyebrow">HONOR. COURAGE. COMMITMENT.</span><h2>Every move has character.</h2></div><span class="edition">01 / CEREMONIAL SERIES</span></div>
@@ -37,5 +38,5 @@
  </main>
  <footer><span class="signature">EL <b>♛</b>SZABA</span><span>SEMPER FIDELIS</span><small>Independent fan project. Not affiliated with or endorsed by the U.S. Marine Corps.</small></footer>
  <dialog id="promotion-picker" aria-labelledby="promotion-title"><h2 id="promotion-title">Promote your pawn</h2><p>Choose the Marine who takes its place.</p><div class="promotion-choices"><button type="button" value="q">♛ Queen<br><small>Colonel</small></button><button type="button" value="r">♜ Rook<br><small>Master Sergeant</small></button><button type="button" value="b">♝ Bishop<br><small>Captain</small></button><button type="button" value="n">♞ Knight<br><small>First Lieutenant</small></button></div><button type="button" id="promotion-cancel">Cancel move</button></dialog>
- <script type="module" src="game.js?v=sounds-26"></script>
+ <script type="module" src="game.js?v=header-27"></script>
 </body></html>
