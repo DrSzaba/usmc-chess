@@ -81,12 +81,16 @@ export async function createPresentation(api){
  const glassFrame=material('#d2e5ed',.28,.12,{clearcoat:1,clearcoatRoughness:.08});
  const glassLight=material('#e2f3f3',.08,.08,{transparent:true,opacity:.78,depthWrite:false,clearcoat:1});
  const glassDark=material('#18405d',.18,.09,{transparent:true,opacity:.81,depthWrite:false,clearcoat:1});
+ const stoneFrame=material('#545b60',.16,.82,{clearcoat:.22});
+ const stoneLight=material('#c9c9c2',.04,.9,{clearcoat:.18});
+ const stoneDark=material('#39474d',.05,.88,{clearcoat:.15});
  function setBoardStyle(style){
   const finishes={
    oak:[wood,dark,wood],
    mahogany:[mahogany,mahoganyDark,mahogany],
    steel:[steelLight,steelDark,steelFrame],
-   glass:[glassLight,glassDark,glassFrame]
+   glass:[glassLight,glassDark,glassFrame],
+   stone:[stoneLight,stoneDark,stoneFrame]
   };
   const [lightSquare,darkSquare,caseFinish]=finishes[style]||finishes.oak;
   for(let i=0;i<tiles.length;i++)tiles[i].material=(Math.floor(i/8)+i%8)%2?darkSquare:lightSquare;

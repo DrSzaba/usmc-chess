@@ -188,3 +188,16 @@ aside .secondary #view {border:1px solid #ad884d;background:linear-gradient(165d
 #stage[data-board="glass"] #flat {background:linear-gradient(135deg,#f7ffff,#94bfcc 24%,#1d5876 55%,#d7f6f6 85%);border-color:#d7f3fb;box-shadow:0 20px 35px #12394c99,0 0 0 4px #2f7392,0 0 0 9px #eafcff,inset 0 0 0 3px #fff}
 #stage[data-board="glass"] .sq.light {background:radial-gradient(circle at 20% 12%,#ffffff,#d1f0f1 48%,#8fbdcd);box-shadow:inset 0 0 8px #fff}
 #stage[data-board="glass"] .sq.dark {background:radial-gradient(circle at 20% 12%,#578ba5,#255474 48%,#0d2d49);box-shadow:inset 0 0 8px #9fe3ee66}
+#stage[data-board="stone"].flat-mode {background:radial-gradient(circle,#b9bab4,#4e5c62 72%,#222e36)}
+#stage[data-board="stone"] #flat {background:linear-gradient(135deg,#d5d5cc,#53636b 25%,#303f47 62%,#a6a8a2);border-color:#a9aaa4;box-shadow:0 20px 34px #0b1827a8,0 0 0 5px #27343d,0 0 0 10px #a7aaa7,inset 0 0 0 3px #d6d5cb}
+#stage[data-board="stone"] .sq.light {background:radial-gradient(circle at 25% 18%,#e0dfd4,#b9b9b0 50%,#909895)}
+#stage[data-board="stone"] .sq.dark {background:radial-gradient(circle at 25% 18%,#63757a,#384951 52%,#24343c)}
+#promotion-picker {width:min(550px,92vw);padding:26px;border:3px solid #cda765;border-radius:12px;background:#12243b;color:#fff5dc;box-shadow:0 20px 70px #000b;text-align:center}
+#promotion-picker::backdrop {background:#07111dcc}
+#promotion-picker h2 {margin:0 0 7px;font-size:28px;color:#f3d59c}
+#promotion-picker p {margin:0 0 18px}
+.promotion-choices {display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.promotion-choices button,#promotion-cancel {cursor:pointer;border:1px solid #d9b874;border-radius:8px;background:#263f5b;color:#fff8e8;padding:12px;font-family:inherit;font-weight:700}
+.promotion-choices button {font-size:23px}.promotion-choices small {font-size:13px}
+.promotion-choices button:hover,.promotion-choices button:focus-visible {background:#a4733c;outline:3px solid #fff0bb}
+#promotion-cancel {margin-top:18px;font-size:14px;background:#17283c}

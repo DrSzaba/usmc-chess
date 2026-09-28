@@ -40,7 +40,7 @@ function speak(message){
   soundState.textContent=`Speaking: ${message}`;
  }catch(e){soundState.textContent='Spoken callouts are unavailable on this device.';console.warn('Speech unavailable',e)}
 }
-function announceCapture(piece){const term=nextMarineTerm();soundBanner(`${names[piece]} CAPTURE · “${term}”`);speak(term)}
+function announceCapture(piece){const term=nextMarineTerm();soundBanner(`${names[piece]} CAPTURE · “${term}”`);playCue('capture',piece);speak(term)}
 function soundBanner(message){$('sound-event').textContent=message;$('sound-banner').classList.remove('pulse');void $('sound-banner').offsetWidth;$('sound-banner').classList.add('pulse')}
 async function unlockAudio(){
  try{
@@ -80,12 +80,13 @@ function noiseFor(ctx){
 async function playCue(kind,piece='p'){
  if(!soundEnabled)return;
  const ctx=await unlockAudio();if(!ctx)return;
- const start=ctx.currentTime+.012,noise=noiseFor(ctx),master=ctx.createDynamicsCompressor(),level=ctx.createGain();
+const start=ctx.currentTime+.012,noise=noiseFor(ctx),master=ctx.createDynamicsCompressor(),level=ctx.createGain();
  master.threshold.value=-20;master.knee.value=20;master.ratio.value=3;master.attack.value=.003;master.release.value=.18;level.gain.value=volume();master.connect(level).connect(ctx.destination);
  function woodenClack(delay=0,weight=1,depth=1){
-  const tone=$('board-tone').value==='parade'?'parade':boardStyle.value;
-  if(tone==='steel'){metalImpact(delay,weight);return}
-  if(tone==='glass'){glassImpact(delay,weight);return}
+  const selectedTone=$('board-tone').value,tone=selectedTone==='match'?boardStyle.value:selectedTone;
+  if(tone==='steel'){metalImpact(delay,weight,depth);return}
+  if(tone==='glass'){glassImpact(delay,weight,depth);return}
+  if(tone==='stone'){stoneImpact(delay,weight,depth);return}
   depth*=tone==='mahogany'?1.42:tone==='parade'?.66:1;
   weight*=tone==='mahogany'?1.12:tone==='parade'?.82:1;
   const at=start+delay;
@@ -110,25 +111,37 @@ async function playCue(kind,piece='p'){
    osc.start(at);osc.stop(at+decay+.01);
   }
  }
- function metalImpact(delay=0,weight=1){
+ function metalImpact(delay=0,weight=1,depth=1){
   const at=start+delay;
   const strike=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
   strike.buffer=noise;filter.type='highpass';filter.frequency.value=1250;
   gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.18*weight,at+.002);
-  gain.gain.exponentialRampToValueAtTime(.0001,at+.075);
+  gain.gain.exponentialRampToValueAtTime(.0001,at+.055*depth);
   strike.connect(filter).connect(gain).connect(master);strike.start(at);strike.stop(at+.09);
   for(const [freq,vol,decay] of [[390,.085,.29],[678,.067,.22],[1163,.04,.16]]){
-   const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sine';osc.frequency.value=freq;
+   const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sine';osc.frequency.value=freq/depth;
    g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol*weight,at+.003);
-   g.gain.exponentialRampToValueAtTime(.0001,at+decay);osc.connect(g).connect(master);osc.start(at);osc.stop(at+decay+.01);
+   g.gain.exponentialRampToValueAtTime(.0001,at+decay*depth);osc.connect(g).connect(master);osc.start(at);osc.stop(at+decay*depth+.01);
   }
  }
- function glassImpact(delay=0,weight=1){
+ function glassImpact(delay=0,weight=1,depth=1){
   const at=start+delay;
   for(const [freq,vol,decay] of [[740,.068,.39],[1130,.040,.32],[1690,.024,.24],[2320,.011,.16]]){
-   const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sine';osc.frequency.value=freq;
+   const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sine';osc.frequency.value=freq/depth;
    g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol*weight,at+.002);
-   g.gain.exponentialRampToValueAtTime(.0001,at+decay);osc.connect(g).connect(master);osc.start(at);osc.stop(at+decay+.01);
+   g.gain.exponentialRampToValueAtTime(.0001,at+decay*depth);osc.connect(g).connect(master);osc.start(at);osc.stop(at+decay*depth+.01);
+  }
+ }
+ function stoneImpact(delay=0,weight=1,depth=1){
+  const at=start+delay,source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+  source.buffer=noise;filter.type='lowpass';filter.frequency.value=1150/depth;
+  gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.29*weight,at+.002);
+  gain.gain.exponentialRampToValueAtTime(.0001,at+.085*depth);
+  source.connect(filter).connect(gain).connect(master);source.start(at);source.stop(at+.11*depth);
+  for(const [freq,vol,decay] of [[115,.12,.13],[237,.065,.085]]){
+   const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='triangle';osc.frequency.value=freq/depth;
+   g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol*weight,at+.003);
+   g.gain.exponentialRampToValueAtTime(.0001,at+decay*depth);osc.connect(g).connect(master);osc.start(at);osc.stop(at+decay*depth+.01);
   }
  }
  function drum(delay=0,weight=1){
@@ -176,12 +189,12 @@ async function playCue(kind,piece='p'){
  if(kind==='select'){woodenClack(0,.35,.72);return}
  if(kind==='move'||kind==='check'){
   // Movement has its own short signature for every rank, even without a capture.
-  if(piece==='p'){woodenClack(0,.72,.73);woodenClack(.11,.35,.58)}
-  else if(piece==='n'){woodenClack(0,.8,.67);woodenClack(.13,.63,.72);woodenClack(.27,.72,.68)}
-  else if(piece==='b'){woodenClack(0,.64,.85);woodenClack(.16,.52,.95)}
-  else if(piece==='r'){woodenClack(0,1.05,1.48);woodenClack(.22,.6,1.3)}
-  else if(piece==='q'){woodenClack(0,.56,.72);woodenClack(.09,.65,.78);woodenClack(.18,.82,.85)}
-  else {woodenClack(0,.95,1.15);woodenClack(.22,.95,1.15);woodenClack(.44,.95,1.15)}
+  if(piece==='p'){woodenClack(0,.62,.62);woodenClack(.085,.24,.51)}
+  else if(piece==='n'){woodenClack(0,.8,.76);woodenClack(.12,.55,.92);woodenClack(.31,.7,.72)}
+  else if(piece==='b'){woodenClack(0,.66,.95);woodenClack(.21,.52,1.18)}
+  else if(piece==='r'){woodenClack(0,1.25,1.85);woodenClack(.30,.75,1.65)}
+  else if(piece==='q'){woodenClack(0,.45,.64);woodenClack(.075,.58,.77);woodenClack(.15,.72,.9);woodenClack(.225,.83,1.02)}
+  else {woodenClack(0,1.15,1.32);woodenClack(.28,1.05,1.43);woodenClack(.56,1.2,1.55)}
   if(kind==='check'){woodenClack(.58,1.12,.9);woodenClack(.74,1.12,.9)}
   return;
  }
@@ -223,11 +236,20 @@ function soundForMove(move){
 }
 const square=(r,c)=>'abcdefgh'[c]+(8-r);
 function legal(){return selected?game.moves({square:selected,verbose:true}):[]}
+const promotionDialog=$('promotion-picker');let pendingPromotion=null;
+function finishMove(from,to,promotion){const move=game.move({from,to,promotion});if(!move)return;soundForMove(move);selected=null;render();scheduleCPU()}
+promotionDialog.querySelectorAll('.promotion-choices button').forEach(button=>button.onclick=()=>{
+ if(!pendingPromotion)return;
+ const {from,to}=pendingPromotion;pendingPromotion=null;promotionDialog.close();$('promotion').value=button.value;finishMove(from,to,button.value);
+});
+$('promotion-cancel').onclick=()=>{pendingPromotion=null;promotionDialog.close();render()};
+promotionDialog.addEventListener('cancel',()=>{pendingPromotion=null;render()});
 function choose(s){
  if(busy||game.isGameOver())return;
  const p=game.get(s),moves=legal();
  if(selected&&moves.some(m=>m.to===s)){
-  const move=moves.find(m=>m.to===s);game.move({from:selected,to:s,promotion:$('promotion').value});soundForMove(move);selected=null;render();scheduleCPU();return;
+  if(moves.some(m=>m.to===s&&m.flags.includes('p'))){pendingPromotion={from:selected,to:s};promotionDialog.showModal();promotionDialog.querySelector(`.promotion-choices button[value="${$('promotion').value}"]`)?.focus();return}
+  finishMove(selected,s,$('promotion').value);return;
  }
  selected=p&&p.color===game.turn()?(s===selected?null:s):null;if(selected)playCue('select');render();
 }
@@ -260,7 +282,7 @@ function scheduleCPU(){
   }catch(e){console.warn('Computer worker unavailable',e);finish(null)}
  },240);
 }
-function cancel(){clearTimeout(timer);timer=null;aiJob++;aiWorker?.terminate();aiWorker=null;busy=false;selected=null;if('speechSynthesis' in window)speechSynthesis.cancel()}
+function cancel(){clearTimeout(timer);timer=null;aiJob++;aiWorker?.terminate();aiWorker=null;busy=false;selected=null;pendingPromotion=null;if(promotionDialog.open)promotionDialog.close();if('speechSynthesis' in window)speechSynthesis.cancel()}
 function setView(){ $('canvas').hidden=flat;$('flat').hidden=!flat;$('stage').classList.toggle('flat-mode',flat);$('view').textContent=flat?'Use 3D board':'Use 2D board';$('instructions').textContent=flat?'Select a piece, then a highlighted square. Arrow keys navigate the board.':'Select a piece, then a highlighted square. Drag to rotate the 3D board and scroll to zoom.';sizeFlatBoard();render() }
 let has3D=false;
  $('view').onclick=()=>{if(has3D){flat=!flat;setView()}};
@@ -271,7 +293,7 @@ let has3D=false;
  $('flip').onclick=()=>{flipped=!flipped;cameraReset();render()};$('reset-view').onclick=()=>cameraReset();
 render();
 try {
- const { createPresentation } = await import('./presentation.js?v=finishes-25');
+ const { createPresentation } = await import('./presentation.js?v=stone-26');
  const view3D = await createPresentation({ stage: $('stage'), host: $('canvas'), game, choose, legal, selection:()=>selected, isFlat:()=>flat, isFlipped:()=>flipped, ranks, rankMarks });
  redraw3D=view3D.redraw; cameraReset=view3D.reset;apply3DBoard=view3D.setBoardStyle;apply3DBoard(boardStyle.value);
  for (const [id,fn] of Object.entries({'showcase':view3D.showcase,'overhead':view3D.overhead,'zoom-in':()=>view3D.zoom(.82),'zoom-out':()=>view3D.zoom(1.22),'inspect':()=>view3D.inspect(selected)})) $(id).onclick=fn;
