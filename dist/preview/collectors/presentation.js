@@ -2,7 +2,7 @@ import * as T from 'three';
 import { OrbitControls } from '../../vendor/OrbitControls.js';
 import { RoomEnvironment } from '../../vendor/RoomEnvironment.js';
 import { Reflector } from '../../vendor/Reflector.js';
-import { makeWorkshop } from './sculptures.js?v=uniform-15';
+import { makeWorkshop } from './sculptures.js?v=ranks-26';
 
 const CELL=1.15;
 const coords=s=>[(s.charCodeAt(0)-97-3.5)*CELL,(8-Number(s[1])-3.5)*CELL];
@@ -65,12 +65,32 @@ export async function createPresentation(api){
  for(const x of [-4.9,4.9])for(const z of [-4.9,4.9]){cyl(frame,.27,.32,.13,M.black,x,-.954,z);cyl(frame,.30,.31,.04,M.gold,x,-.90,z)}
  // Thin continuous grid inlays remain visible beneath legal-move markers.
  for(let i=0;i<=8;i++){const a=(i-4)*CELL;box(frame,9.21,.011,.009,M.goldLight,0,.145,a);box(frame,.009,.011,9.21,M.goldLight,a,.145,0)}
- scene.add(bake(frame));
+ const frameObject=bake(frame);scene.add(frameObject);
+ const frameWoodMeshes=[];frameObject.traverse(o=>{if(o.isMesh&&o.material===wood)frameWoodMeshes.push(o)});
  const tiles=[];
  const mirror=new Reflector(new T.PlaneGeometry(9.18,9.18),{color:0xaaa9a4,textureWidth:1024,textureHeight:1024,clipBias:.003});mirror.rotation.x=-Math.PI/2;mirror.position.y=.132;scene.add(mirror);
  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
   const x=(c-3.5)*CELL,z=(r-3.5)*CELL;
   const tile=add(scene,new T.PlaneGeometry(CELL-.012,CELL-.012),(r+c)%2?dark:wood,x,.139,z);tile.rotation.x=-Math.PI/2;tile.receiveShadow=true;tile.userData.square='abcdefgh'[c]+(8-r);tiles.push(tile);
+ }
+ const mahogany=material('#7c473e',.08,.20,{map:grain,clearcoat:1,clearcoatRoughness:.12});
+ const mahoganyDark=material('#1a2534',.25,.17,{clearcoat:1});
+ const steelFrame=material('#87959c',.88,.20,{clearcoat:.8});
+ const steelLight=material('#cbd1ce',.72,.18,{clearcoat:.7});
+ const steelDark=material('#263e52',.8,.24,{clearcoat:.65});
+ const glassFrame=material('#d2e5ed',.28,.12,{clearcoat:1,clearcoatRoughness:.08});
+ const glassLight=material('#e2f3f3',.08,.08,{transparent:true,opacity:.78,depthWrite:false,clearcoat:1});
+ const glassDark=material('#18405d',.18,.09,{transparent:true,opacity:.81,depthWrite:false,clearcoat:1});
+ function setBoardStyle(style){
+  const finishes={
+   oak:[wood,dark,wood],
+   mahogany:[mahogany,mahoganyDark,mahogany],
+   steel:[steelLight,steelDark,steelFrame],
+   glass:[glassLight,glassDark,glassFrame]
+  };
+  const [lightSquare,darkSquare,caseFinish]=finishes[style]||finishes.oak;
+  for(let i=0;i<tiles.length;i++)tiles[i].material=(Math.floor(i/8)+i%8)%2?darkSquare:lightSquare;
+  for(const mesh of frameWoodMeshes)mesh.material=caseFinish;
  }
  for(let i=0;i<8;i++)for(const sign of [-1,1]){
   const a=text(scene,'ABCDEFGH'[i],.27,.15,(i-3.5)*CELL,.145,sign*4.87);a.rotation.x=-Math.PI/2;if(sign===-1)a.rotation.z=Math.PI;
@@ -117,5 +137,5 @@ export async function createPresentation(api){
   for(const item of currentPieces.values())if(item.motion){const m=item.motion,t=Math.min(1,(now-m.time)/360),s=t*t*(3-2*t);item.model.position.lerpVectors(m.from,m.target,s);item.model.position.y+=Math.sin(t*Math.PI)*.20;if(t===1)delete item.motion}
   controls.autoRotate=auto;controls.autoRotateSpeed=.55;controls.update();renderer.render(scene,camera);
  });
- return {redraw,reset,showcase(){auto=!auto;transition=null;document.getElementById('showcase').setAttribute('aria-pressed',String(auto))},overhead(){cameraTo([0,22,.01],[0,0,0])},zoom(f){const offset=camera.position.clone().sub(controls.target).multiplyScalar(f);const length=T.MathUtils.clamp(offset.length(),2.4,40);offset.setLength(length);cameraTo(controls.target.clone().add(offset).toArray(),controls.target.toArray())},inspect(s){const targetSquare=s||'e1',p=currentPieces.get(targetSquare);if(!p)return;const [x,z]=coords(targetSquare),f=game.get(targetSquare).color==='w'?-1:1;cameraTo([x+2.1,2.75,z+f*3.15],[x,1.0,z])}};
+ return {redraw,reset,setBoardStyle,showcase(){auto=!auto;transition=null;document.getElementById('showcase').setAttribute('aria-pressed',String(auto))},overhead(){cameraTo([0,22,.01],[0,0,0])},zoom(f){const offset=camera.position.clone().sub(controls.target).multiplyScalar(f);const length=T.MathUtils.clamp(offset.length(),2.4,40);offset.setLength(length);cameraTo(controls.target.clone().add(offset).toArray(),controls.target.toArray())},inspect(s){const targetSquare=s||'e1',p=currentPieces.get(targetSquare);if(!p)return;const [x,z]=coords(targetSquare),f=game.get(targetSquare).color==='w'?-1:1;cameraTo([x+2.1,2.75,z+f*3.15],[x,1.0,z])}};
 }
