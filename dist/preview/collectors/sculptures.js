@@ -87,9 +87,9 @@ export function makeWorkshop(environment) {
   const body=new T.Group();g.add(body);const senior=type!=='p';
   // Anatomical proportions: boots, shaped trouser legs, jacket waist and shoulders.
   for(const sign of [-1,1]){
-   const x=sign*.094;
+   const x=sign*(female?.135:.094);
    ell(body,x,.409,.043,.077,.055,.145,M.shoe);
-   const leg=profile(body,[[.44,.058,.06],[.53,.055,.057],[.73,.064,.067],[.86,.067,.07],[.97,.079,.083],[1.01,.077,.082]],pants,64);leg.position.x=x;
+   const leg=profile(body,female?[[.44,.058,.06],[.53,.059,.06],[.73,.075,.076],[.86,.099,.095],[.97,.112,.11],[1.01,.101,.10]]:[[.44,.058,.06],[.53,.055,.057],[.73,.064,.067],[.86,.067,.07],[.97,.079,.083],[1.01,.077,.082]],pants,64);leg.position.x=x;
    if(color==='w'){
     line(body,[[x+sign*.059,.46,.01],[x+sign*.063,.71,.005],[x+sign*.076,.96,0]],.009,M.stripeBlue);
     line(body,[[x+sign*.069,.46,.01],[x+sign*.073,.71,.005],[x+sign*.086,.96,0]],.004,M.stripeWhite);
@@ -100,22 +100,23 @@ export function makeWorkshop(environment) {
    line(body,[[x,.50,.061],[x,.74,.072],[x,1.00,.085]],.003,color==='w'?M.red:M.trouserWhite);
    ring(body,.07,.004,M.goldLight,x,.468);
   }
-  profile(body,female?[[.94,.17,.10],[.98,.17,.107],[1.07,.125,.091],[1.17,.14,.101],[1.31,.173,.107],[1.37,.166,.101],[1.40,.115,.076],[1.41,.066,.055]]:[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,72);
+  profile(body,female?[[.88,.205,.145],[.94,.235,.155],[.98,.225,.15],[1.07,.115,.09],[1.17,.128,.10],[1.31,.15,.10],[1.37,.145,.095],[1.40,.11,.076],[1.41,.066,.055]]:[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,72);
   if(female){
-   // Sculpt the same full, uniform-covered bust as the Queen, scaled to a PFC.
-   // A narrow waist and flared jacket hem keep the silhouette distinct in play.
+   // Full Queen-like bust, pronounced hips and rounded rear, all under the uniform.
    for(const sign of [-1,1]){
-    ell(body,sign*.085,1.295,.105,.105,.105,.105,u);
-    ell(body,sign*.085,1.30,.175,.083,.079,.047,u);
-    line(body,[[sign*.012,1.391,.098],[sign*.085,1.372,.202],[sign*.178,1.31,.124]],.006,M.goldLight);
+    ell(body,sign*.104,1.29,.125,.135,.125,.145,u);
+    ell(body,sign*.104,1.30,.235,.115,.103,.075,u);
+    line(body,[[sign*.012,1.405,.12],[sign*.104,1.395,.286],[sign*.235,1.30,.145]],.008,M.goldLight);
+    ell(body,sign*.175,.927,.015,.135,.135,.16,u);
+    ell(body,sign*.125,.865,-.125,.142,.137,.125,pants);
    }
-   profile(body,[[.955,.177,.113],[1.018,.168,.11],[1.09,.124,.094]],u,48);
+   profile(body,[[.855,.245,.153],[.94,.24,.158],[1.018,.18,.123],[1.09,.115,.09]],u,48);
   }
   cyl(body,.069,.065,.07,skin,0,1.44,0,32);
   // Standing collar, red piping, belt and a small raised buckle.
   profile(body,[[1.389,.075,.061],[1.447,.074,.060],[1.452,.07,.058]],u,32);
   line(body,[[-.06,1.447,.035],[0,1.447,.063],[.06,1.447,.035]],.005,color==='w'?M.gold:M.red);
-  const belt=profile(body,[[1.035,.15,.106],[1.071,.149,.105]],M.black,40);
+  const belt=profile(body,female?[[1.035,.13,.098],[1.071,.128,.097]]:[[1.035,.15,.106],[1.071,.149,.105]],M.black,40);
   box(body,.055,.038,.02,M.goldLight,0,1.054,.113);
   for(let i=0;i<5;i++)ell(body,0,1.10+i*.061,.118,.012,.012,.006,M.goldLight);
   for(const sign of [-1,1]){
