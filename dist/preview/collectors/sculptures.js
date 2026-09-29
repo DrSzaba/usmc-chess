@@ -392,7 +392,7 @@ export function makeWorkshop(environment) {
   for(const sign of [-1,1])for(let j=0;j<5;j++)ell(g,sign*.188,1.04-j*.025,-.19,.004,.004,.004,M.goldLight);
  }
  function tank(g,color){
-  const armor=color==='w'?M.sand:M.olive,shadow=color==='w'?M.silver:M.black,trim=color==='w'?M.gold:M.goldLight;
+  const armor=color==='w'?M.ivory:M.navy,shadow=M.black,trim=color==='w'?M.gold:M.goldLight;
   // Compact armored rook, with a low silhouette and a clear tank profile.
   for(const sign of [-1,1]){
    const x=sign*.285;
@@ -411,12 +411,29 @@ export function makeWorkshop(environment) {
     box(g,.178,.035,.056,M.shoe,x,.376,z);
     box(g,.01,.007,.039,trim,sign*.383,.755,z);
    }
+   // Separate armored skirt and visible road wheels make the tracks read as a tank.
+   box(g,.026,.13,.59,armor,sign*.196,.656,-.018);
+   for(let j=0;j<6;j++){
+    const z=-.294+j*.116;
+    ell(g,sign*.383,.54,z,.012,.043,.043,trim);
+    ell(g,sign*.396,.54,z,.004,.014,.014,M.black);
+   }
+   const side=new T.Group();side.rotation.y=sign*Math.PI/2;g.add(side);
+   box(side,.45,.145,.012,armor,0,.747,.405);
+   for(const z of [-.198,.198])box(side,.012,.139,.014,trim,z,.747,.415);
+   text(side,'USMC',.30,.084,0,.755,.423);
+   for(let j=0;j<4;j++)star(side,.015,-.135+j*.036,.68,.427,trim);
    box(g,.025,.13,.47,armor,sign*.20,.65,-.02);
    for(let j=0;j<5;j++)box(g,.009,.006,.057,trim,sign*.215,.705,-.21+j*.105);
   }
   // Armored hull, pointed glacis, and inset lamps.
   box(g,.55,.22,.65,armor,0,.65,-.025);
   box(g,.57,.027,.67,trim,0,.764,-.025);
+  for(const sign of [-1,1]){
+   line(g,[[sign*.055,.775,.33],[sign*.22,.775,.19],[sign*.27,.775,-.22]],.004,trim);
+   box(g,.115,.012,.065,M.black,sign*.186,.782,-.185);
+   for(let j=0;j<4;j++)box(g,.005,.014,.065,trim,sign*(.142+j*.029),.794,-.185);
+  }
   const prow=new T.Mesh(new T.ConeGeometry(.30,.33,4),armor);
   prow.rotation.x=Math.PI/2;prow.rotation.y=Math.PI/4;prow.position.set(0,.65,.325);g.add(prow);
   line(g,[[-.25,.763,.26],[0,.755,.49],[.25,.763,.26]],.011,M.goldLight);
@@ -430,6 +447,20 @@ export function makeWorkshop(environment) {
   cyl(g,.211,.245,.15,armor,0,.916,-.08,10);
   cyl(g,.18,.206,.04,armor,0,1.012,-.08,10);
   ring(g,.212,.011,trim,0,.991,-.08);
+  // Hatch, optical box, smoke launchers, antennae and rear stowage follow the reference.
+  box(g,.105,.085,.10,armor,-.15,1.079,-.11);
+  box(g,.052,.043,.009,M.black,-.15,1.092,-.053);
+  ring(g,.075,.006,trim,.105,1.057,-.19);
+  for(const sign of [-1,1]){
+   for(let j=0;j<3;j++){
+    const tube=cyl(g,.019,.019,.070,M.black,sign*.244,.950,-.19+j*.045,12);
+    tube.rotation.z=sign*.36;
+   }
+   line(g,[[sign*.17,1.007,-.31],[sign*.17,1.40,-.31]],.003,M.goldLight);
+   ell(g,sign*.17,1.40,-.31,.005,.007,.005,trim);
+  }
+  box(g,.31,.10,.045,M.black,0,.857,-.399);
+  for(let j=0;j<6;j++)box(g,.008,.073,.051,trim,-.13+j*.052,.864,-.411);
   cyl(g,.09,.09,.012,M.black,-.08,1.04,-.13,24);
   ring(g,.086,.008,M.goldLight,-.08,1.05,-.13);
   for(const sign of [-1,1]){
@@ -441,13 +472,14 @@ export function makeWorkshop(environment) {
    }
   }
   // Tapered cannon, recoil jacket, metallic rings, and dark muzzle bore.
-  limb(g,[0,.932,.09],[0,.932,.47],.07,.044,shadow);
-  limb(g,[0,.932,.16],[0,.932,.458],.047,.031,armor);
-  for(const z of [.18,.32,.43]){
+  limb(g,[0,.932,.09],[0,.932,.56],.07,.044,shadow);
+  limb(g,[0,.932,.16],[0,.932,.548],.047,.031,armor);
+  for(const z of [.18,.39,.52]){
    const collar=cyl(g,.052,.052,.013,trim,0,.932,z,24);collar.rotation.x=Math.PI/2;
   }
-  const muzzle=cyl(g,.059,.059,.042,M.goldLight,0,.932,.488,24);muzzle.rotation.x=Math.PI/2;
-  const bore=cyl(g,.033,.033,.044,M.black,0,.932,.51,24);bore.rotation.x=Math.PI/2;
+  const muzzle=cyl(g,.059,.059,.042,M.goldLight,0,.932,.578,24);muzzle.rotation.x=Math.PI/2;
+  const bore=cyl(g,.033,.033,.044,M.black,0,.932,.60,24);bore.rotation.x=Math.PI/2;
+  text(g,'1775',.17,.055,0,.65,.52);
   insignia(g,0,.638,.407,.24);
   // Marine Master Sergeant: three upright chevrons, crossed rifles, three rockers.
   for(const sign of [-1,1]){
