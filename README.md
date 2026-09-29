@@ -12,7 +12,7 @@ Includes legal move validation, castling, en passant, selectable pawn promotion,
 
 ## Design status
 
-The playable figures are original stylized geometric 3D models with white and navy uniforms, caps, medals, gold bases, towers, horses, queens, and crowned officers. They are not a photorealistic recreation of the reference. Matching the reference sculpture detail requires custom modeled and textured 3D assets. The original reference is accessible from the game.
+The playable figures are original stylized geometric 3D models. The September 2026 source photos for each role are available in the game's “Dr. Szaba's piece designs” gallery. The 3D meshes follow their uniforms and silhouettes, including fitted queen trousers, mixed-gender PFC pawns and knights, and rear pedestal rank plaques. They are not photorealistic reconstructions; exact front and rear photographic likeness would require custom sculpted and textured 3D assets.
 
 The support button opens the supplied Cash App account `$Szaba`. A PayPal button is not configured because no PayPal payment link has been supplied.
 

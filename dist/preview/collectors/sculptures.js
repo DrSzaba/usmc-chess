@@ -16,16 +16,17 @@ export function makeWorkshop(environment) {
   stripeBlue:material('#164c81',.12,.32),stripeWhite:material('#fefbf1',.02,.32),
   ribbonBlue:material('#2379aa',.1,.37),ribbonGreen:material('#22644b',.1,.37),
   lipW:material('#4f2820',0,.52),lipB:material('#a66d58',0,.5),gem:material('#a72237',.35,.2),
+  olive:material('#464a38',.28,.46),sand:material('#baa27c',.21,.47),
  };
  const add=(p,g,m,x=0,y=0,z=0)=>{const o=new T.Mesh(g,m);o.position.set(x,y,z);p.add(o);return o};
  // Extra tessellation keeps faces, hands, covers and curved uniform details
  // round when a player uses the close inspection camera.
- const sphereGeo=new T.SphereGeometry(1,24,16);
+ const sphereGeo=new T.SphereGeometry(1,48,32);
  const ell=(p,x,y,z,rx,ry,rz,m)=>{const o=add(p,sphereGeo,m,x,y,z);o.scale.set(rx,ry,rz);return o};
  const box=(p,w,h,d,m,x=0,y=0,z=0)=>add(p,new T.BoxGeometry(w,h,d),m,x,y,z);
  const cyl=(p,rt,rb,h,m,x=0,y=0,z=0,n=64)=>add(p,new T.CylinderGeometry(rt,rb,h,n),m,x,y,z);
  const ring=(p,r,t,m,x=0,y=0,z=0)=>{const o=add(p,new T.TorusGeometry(r,t,12,72),m,x,y,z);o.rotation.x=Math.PI/2;return o};
- function line(p,points,r,m){const curve=new T.CatmullRomCurve3(points.map(a=>new T.Vector3(...a)));return add(p,new T.TubeGeometry(curve,Math.max(8,points.length*5),r,8,false),m)}
+ function line(p,points,r,m){const curve=new T.CatmullRomCurve3(points.map(a=>new T.Vector3(...a)));return add(p,new T.TubeGeometry(curve,Math.max(12,points.length*8),r,10,false),m)}
  function limb(p,a,b,ra,rb,m){const av=new T.Vector3(...a),bv=new T.Vector3(...b),mid=av.clone().add(bv).multiplyScalar(.5),o=cyl(p,rb,ra,av.distanceTo(bv),m,...mid.toArray(),40);o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),bv.sub(av).normalize());return o}
  function profile(p,rows,m,segments=72,flutes=0){
   const pos=[],uv=[],idx=[];
@@ -42,48 +43,23 @@ export function makeWorkshop(environment) {
   group.traverse(o=>{if(!o.isMesh)return;if(o.material.transparent){const c=o.clone();c.applyMatrix4(o.parent.matrixWorld);labels.push(c);return}const geo=o.geometry.clone().applyMatrix4(o.matrixWorld);const plain=geo.index?geo.toNonIndexed():geo;for(const key of Object.keys(plain.attributes))if(!['position','normal','uv'].includes(key))plain.deleteAttribute(key);if(!plain.attributes.uv)plain.setAttribute('uv',new T.BufferAttribute(new Float32Array(plain.attributes.position.count*2),2));if(!byMaterial.has(o.material))byMaterial.set(o.material,[]);byMaterial.get(o.material).push(plain)});
   const out=new T.Group();for(const [m,list] of byMaterial){const geo=mergeGeometries(list,false);if(!geo)throw Error('Could not merge sculpture geometry');const o=new T.Mesh(geo,m);o.castShadow=true;o.receiveShadow=true;out.add(o);for(const g of list)g.dispose()}for(const o of labels)out.add(o);return out;
  }
- function marble(white){
-  const c=document.createElement('canvas');c.width=c.height=512;const ctx=c.getContext('2d');
-  ctx.fillStyle=white?'#e9e6de':'#102542';ctx.fillRect(0,0,512,512);
-  let seed=1775;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
-  for(let i=0;i<42;i++){ctx.beginPath();let x=rand()*512,y=rand()*512;ctx.moveTo(x,y);for(let j=0;j<9;j++){x+=rand()*80-30;y+=rand()*80-15;ctx.lineTo(x,y)}ctx.strokeStyle=white?'rgba(94,94,101,.16)':'rgba(202,216,233,.23)';ctx.lineWidth=rand()*1.7+.3;ctx.stroke()}
-  const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;return material(white?'#ffffff':'#c8d6ee',.15,.24,{map,clearcoat:.85});
- }
- const marbleWhite=marble(true),marbleBlue=marble(false);
- function base(g,type,color){
-  const stone=color==='w'?marbleWhite:marbleBlue;
-  profile(g,[[0,0,0],[0,.40,.40],[.025,.425,.425],[.058,.425,.425],[.078,.405,.405],[.12,.38,.38],[.25,.375,.375],[.285,.397,.397],[.31,.401,.401],[.335,.37,.37],[.355,.36,.36],[.365,0,0]],stone);
-  for(const [y,r,t] of [[.027,.422,.012],[.065,.411,.008],[.315,.395,.012],[.35,.36,.009]])ring(g,r,t,M.goldLight,0,y);
-  cyl(g,.356,.356,.018,stone,0,.359);
-  insignia(g,0,.19,.386,.64);
-  const rank={p:'PFC',n:'1ST LT',r:'MSGT',b:'CAPT',q:'COL',k:'4★ GEN'}[type];
-  text(g,rank,.34,.075,0,.19,-.39,Math.PI);
- }
- // Smoothly fitted cloth surfaces, rather than spheres attached to a torso.
- function tailored(p,rows,m){
-  const pts=rows.map(r=>new T.Vector4(r[0],r[1],r[2],r[3]||0));const out=[];
-  for(let i=0;i<pts.length-1;i++)for(let j=0;j<5;j++){
-   const t=j/5,a=pts[Math.max(0,i-1)],b=pts[i],c=pts[i+1],d=pts[Math.min(pts.length-1,i+2)];
-   const v=(k)=>.5*((2*b[k])+(-a[k]+c[k])*t+(2*a[k]-5*b[k]+4*c[k]-d[k])*t*t+(-a[k]+3*b[k]-3*c[k]+d[k])*t*t*t);
-   out.push([b.x+(c.x-b.x)*t,Math.max(.001,v('y')),Math.max(.001,v('z')),v('w')]);
-  }out.push(rows.at(-1));return profile(p,out,m,56);
- }
- function cover(g,y,z=0){
-  profile(g,[[y,.112,.097,z],[y+.033,.12,.103,z]],M.black,48);
-  profile(g,[[y+.028,.123,.104,z],[y+.06,.156,.127,z-.012],[y+.095,.154,.129,z-.012],[y+.112,.122,.102,z-.01],[y+.116,0,0,z-.01]],M.white,64);
-  ell(g,0,y+.007,z+.075,.133,.012,.095,M.shoe);
-  line(g,[[-.11,y+.027,z+.05],[0,y+.026,z+.108],[.11,y+.027,z+.05]],.005,M.goldLight);
-  insignia(g,0,y+.073,z+.117,.145);
- }
- function rifle(g,diagonal=false){
-  const gun=new T.Group();g.add(gun);gun.position.set(diagonal?-.17:0,.46,.20);if(diagonal)gun.rotation.z=-.31;
-  tailored(gun,[[0,.036,.027],[.09,.037,.03],[.25,.026,.028],[.34,.023,.024],[.62,.018,.023]],M.hair);
-  limb(gun,[0,.24,0],[0,.90,0],.014,.009,M.black);
-  limb(gun,[.012,.33,.018],[.012,.95,.018],.009,.007,M.silver);
-  for(const y of [.34,.55,.76])box(gun,.045,.016,.052,M.black,0,y,0);
-  box(gun,.027,.065,.02,M.black,.015,.46,.024);
-  line(gun,[[.019,.30,0],[.055,.34,0],[.055,.41,0],[.02,.44,0]],.005,M.black);
-  if(diagonal){limb(gun,[.012,.95,.018],[.012,1.22,.018],.012,.001,M.goldLight);box(gun,.078,.014,.022,M.gold,.01,.95,.018)}
+ function base(g,type){
+  profile(g,[[0,0,0],[0,.405,.405],[.035,.435,.435],[.065,.435,.435],[.083,.4,.4],[.11,.4,.4],[.135,.38,.38],[.27,.38,.38],[.29,.41,.41],[.315,.41,.41],[.34,.36,.36],[.365,.36,.36],[.365,0,0]],M.navy,64);
+  for(const [y,r,t] of [[.035,.429,.012],[.08,.411,.015],[.127,.386,.009],[.278,.397,.013],[.312,.405,.014],[.352,.356,.011]])ring(g,r,t,M.goldLight,0,y);
+  cyl(g,.352,.352,.025,M.ivory,0,.365);
+  for(let i=0;i<10;i++){const a=i*Math.PI/5,s=star(g,.037,Math.sin(a)*.384,.207,Math.cos(a)*.384);s.rotation.y=a}
+  for(let j=0;j<20;j++){const a=j*Math.PI/10;ell(g,Math.sin(a)*.418,.302,Math.cos(a)*.418,.008,.008,.008,M.goldLight)}
+  for(let j=0;j<32;j++){const a=j*Math.PI/16;ell(g,Math.sin(a)*.382,.134,Math.cos(a)*.382,.006,.009,.006,j%4?M.gold:M.red)}
+  ring(g,.347,.004,M.goldLight,0,.368);
+  const rank={p:'PFC',n:'1ST LT',r:'MASTER SGT',b:'CAPTAIN',q:'COLONEL',k:'4-STAR GEN'}[type];
+  // Large raised plaques on both sides, mounted beyond the curved pedestal.
+  for(const a of [0,Math.PI]){
+   const plaque=new T.Group();plaque.rotation.y=a;g.add(plaque);
+   box(plaque,.74,.20,.028,M.black,0,.21,.414);
+   box(plaque,.70,.17,.008,M.gold,0,.21,.432);
+   box(plaque,.66,.145,.008,M.navy,0,.21,.439);
+   text(plaque,rank,.63,.132,0,.21,.452);
+  }
  }
  function face(g,skin,y,female=false){
   const head=new T.Group();head.position.y=y;g.add(head);
@@ -91,9 +67,9 @@ export function makeWorkshop(environment) {
   ell(head,0,.059,-.044,.109,.105,.064,M.hair);
   // Brow ridges, inset eyes, bridge, nostrils, lips and ears remain dimensional.
   for(const sign of [-1,1]){
-   ell(head,sign*.111,-.01,-.007,.017,.034,.018,skin);
-   ell(head,sign*.044,.016,.087,.024,.009,.010,M.white);
-   ell(head,sign*.044,.016,.097,.008,.008,.004,M.hair);
+   ell(head,sign*.111,-.01,-.007,.026,.045,.025,skin);
+   ell(head,sign*.044,.016,.087,.032,.013,.014,M.white);
+   ell(head,sign*.044,.016,.099,.010,.011,.004,M.hair);
    line(head,[[sign*.018,.035,.087],[sign*.044,.041,.093],[sign*.073,.033,.081]],.007,M.hair);
    line(head,[[sign*.015,.022,.09],[sign*.044,.029,.101],[sign*.073,.02,.085]],.004,skin);
    // Smooth cheeks: avoid separate round pads that looked like spots.
@@ -107,103 +83,256 @@ export function makeWorkshop(environment) {
   return head;
  }
  function marine(g,type,color,female=false){
-  const u=color==='w'?M.ivory:M.black,pants=color==='w'?M.trouserWhite:M.navy,skin=color==='w'?M.skinW:M.skinB;
-  const body=new T.Group();g.add(body);const queen=type==='q',officer=type!=='p';
-  // Full trousered silhouettes: long legs, tapered knees and a continuous fitted jacket.
+  const u=color==='w'?M.ivory:M.navy,skin=color==='w'?M.skinW:M.skinB;
+  const pants=color==='w'?M.ivory:M.navy;
+  const body=new T.Group();g.add(body);const senior=type!=='p';
+  // Anatomical proportions: boots, shaped trouser legs, jacket waist and shoulders.
   for(const sign of [-1,1]){
-   const x=sign*(female?.079:.087),leg=new T.Group();body.add(leg);leg.position.x=x;
-   tailored(leg,female?[[.42,.043,.052],[.53,.045,.053],[.70,.053,.055],[.85,.058,.065],[1.01,.087,.103],[1.10,.093,.11]]:[[.42,.051,.06],[.56,.051,.059],[.77,.056,.064],[.96,.069,.083],[1.08,.077,.09]],pants);
-   ell(body,x,.405,.043,.056,.04,.104,M.shoe);
-   line(body,[[x+sign*.048,.45,0],[x+sign*.055,.77,0],[x+sign*(female?.091:.075),1.05,0]],.006,M.red);
-   line(body,[[x,.47,.054],[x,.73,.06],[x,1.0,.087]],.0018,pants);
-  }
-  const rows=female?[[.99,.168,.105,-.007],[1.045,queen?.187:.17,.114,-.006],[1.10,.145,.103],[1.20,.108,.077],[1.29,.122,.095,.007],[1.37,.157,queen?.143:.118,.025],[1.43,.162,.099],[1.47,.131,.073],[1.485,.060,.048]]:[[1.0,.151,.097],[1.10,.148,.097],[1.20,.137,.09],[1.33,.164,.105],[1.43,.185,.107],[1.47,.146,.084],[1.485,.06,.05]];
-  tailored(body,rows,u);
-  // Center seam and jacket skirt, with raised piping kept subtle.
-  line(body,[[0,1.02,.106],[0,1.18,.084],[0,1.32,female?.132:.11],[0,1.455,.086]],.0025,color==='w'?M.gold:M.red);
-  for(const sign of [-1,1])line(body,[[sign*.145,1.035,.047],[sign*.103,1.09,.089],[sign*.026,1.19,.088]],.0025,u);
-  profile(body,[[1.175,female?.111:.139,.085],[1.211,female?.112:.14,.086]],type==='k'?M.gold:color==='w'?M.gold:M.shoe,56);
-  box(body,.048,.035,.011,M.goldLight,0,1.194,.092);
-  for(let j=0;j<4;j++)ell(body,0,1.255+j*.054,female?.135:.113,.008,.008,.005,M.goldLight);
-  cyl(body,.051,.055,.064,skin,0,1.51);
-  profile(body,[[1.466,.061,.052],[1.529,.061,.052]],u,40);
-  line(body,[[-.049,1.526,.034],[0,1.526,.055],[.049,1.526,.034]],.003,M.goldLight);
-  if(female){
-   for(const sign of [-1,1]){const lapel=new T.Shape();lapel.moveTo(sign*.043,1.51);lapel.lineTo(sign*.096,1.421);lapel.lineTo(sign*.027,1.346);lapel.lineTo(0,1.412);lapel.closePath();add(body,new T.ExtrudeGeometry(lapel,{depth:.006,bevelEnabled:false}),u,0,0,.129)}
-  }
-  // Reference poses: queens' hands at their waists; other Marines holding a weapon.
-  for(const sign of [-1,1]){
-   const shoulder=[sign*.17,1.438,0],elbow=queen?[sign*.26,1.28,.018]:[sign*.203,1.24,.034],wrist=queen?[sign*.132,1.205,.116]:[sign*.035,1.12+(sign===1?.03:0),.218];
-   limb(body,shoulder,elbow,.053,.042,u);ell(body,...elbow,.042,.043,.041,u);limb(body,elbow,wrist,.042,.03,u);
-   ell(body,...wrist,.034,.042,.022,M.white);
-   for(let f=0;f<4;f++)line(body,[[wrist[0]-.02+f*.012,wrist[1]+.01,wrist[2]+.022],[wrist[0]-.015+f*.012,wrist[1]-.025,wrist[2]+.024]],.0016,M.ivory);
-   const cuff=wrist.map((v,i)=>v+(elbow[i]-v)*.18);ell(body,...cuff,.035,.015,.033,officer?M.gold:u);
-   for(let j=0;j<3;j++)ell(body,elbow[0],elbow[1]-.022*j,elbow[2]+.04,.004,.004,.003,M.goldLight);
-   box(body,.091,.013,.051,officer?M.gold:u,sign*.143,1.473,0);
-   if(type==='p'){
-    const rank=new T.Group();rank.position.set(sign*.206,1.365,.008);rank.rotation.y=sign*Math.PI/2;body.add(rank);
-    line(rank,[[-.035,-.018,0],[0,.02,0],[.035,-.018,0]],.013,M.red);line(rank,[[-.033,-.016,.009],[0,.018,.009],[.033,-.016,.009]],.006,M.goldLight);
+   const x=sign*(female?.115:.094);
+   ell(body,x,.409,.043,.077,.055,.145,M.shoe);
+   const leg=profile(body,female?[[.44,.058,.06],[.53,.059,.06],[.73,.075,.076],[.86,.099,.095],[.97,.112,.11],[1.01,.101,.10]]:[[.44,.058,.06],[.53,.055,.057],[.73,.064,.067],[.86,.067,.07],[.97,.079,.083],[1.01,.077,.082]],pants,64);leg.position.x=x;
+   if(color==='w'){
+    line(body,[[x+sign*.059,.46,.01],[x+sign*.063,.71,.005],[x+sign*.076,.96,0]],.009,M.stripeBlue);
+    line(body,[[x+sign*.069,.46,.01],[x+sign*.073,.71,.005],[x+sign*.086,.96,0]],.004,M.stripeWhite);
+   }else{
+    line(body,[[x+sign*.06,.46,.01],[x+sign*.065,.71,.005],[x+sign*.078,.96,0]],.011,M.red);
+    line(body,[[x+sign*.069,.46,.01],[x+sign*.074,.71,.005],[x+sign*.087,.96,0]],.003,M.gold);
    }
-   if(type==='b')for(const x of [-.022,.022])box(body,.012,.009,.035,M.silver,sign*.14+x,1.484,.008);
-   if(type==='k')for(let j=0;j<4;j++){const st=star(body,.014,sign*.145+(j-1.5)*.021,1.485,.015,M.silver);st.rotation.x=-Math.PI/2;}
+   line(body,[[x,.50,.061],[x,.74,.072],[x,1.00,.085]],.003,color==='w'?M.red:M.trouserWhite);
+   ring(body,.07,.004,M.goldLight,x,.468);
   }
-  // Pocket flaps, ribbon bars, medals and collar insignia.
+  profile(body,female?[[.88,.165,.12],[.94,.195,.135],[.98,.19,.135],[1.07,.115,.09],[1.17,.125,.10],[1.31,.175,.125],[1.37,.17,.115],[1.40,.115,.08],[1.41,.066,.055]]:[[.94,.155,.09],[.98,.16,.105],[1.07,.143,.099],[1.17,.168,.111],[1.31,.195,.113],[1.37,.191,.106],[1.40,.124,.078],[1.41,.066,.055]],u,72);
+  if(female){
+   // Tailored female PFC silhouette follows the supplied full-length reference.
+   for(const sign of [-1,1]){
+    ell(body,sign*.092,1.29,.105,.083,.082,.068,u);
+    ell(body,sign*.135,.942,.0,.078,.08,.105,u);
+   }
+   profile(body,[[.855,.188,.126],[.94,.191,.135],[1.018,.157,.112],[1.09,.115,.09]],u,48);
+  }
+  cyl(body,.069,.065,.07,skin,0,1.44,0,32);
+  // Standing collar, red piping, belt and a small raised buckle.
+  profile(body,[[1.389,.075,.061],[1.447,.074,.060],[1.452,.07,.058]],u,32);
+  line(body,[[-.06,1.447,.035],[0,1.447,.063],[.06,1.447,.035]],.005,color==='w'?M.gold:M.red);
+  const belt=profile(body,female?[[1.035,.13,.098],[1.071,.128,.097]]:[[1.035,.15,.106],[1.071,.149,.105]],M.black,40);
+  box(body,.055,.038,.02,M.goldLight,0,1.054,.113);
+  for(let i=0;i<5;i++)ell(body,0,1.10+i*.061,.118,.012,.012,.006,M.goldLight);
   for(const sign of [-1,1]){
-   const z=female?.145:.109;
-   box(body,.062,.037,.007,u,sign*.087,1.332,z);
-   line(body,[[sign*.087-.031,1.351,z+.006],[sign*.087,1.342,z+.01],[sign*.087+.031,1.351,z+.006]],.002,u);
-   insignia(body,sign*.038,1.496,.05,.065);
+   ell(body,sign*.188,1.335,0,.07,.081,.082,u);
+   limb(body,[sign*.204,1.335,0],[sign*.235,1.13,.012],.065,.048,u);
+   ell(body,sign*.235,1.126,.012,.049,.044,.049,u);
+   limb(body,[sign*.235,1.13,.012],[sign*.221,.972,.041],.048,.039,u);
+   const cuff=ring(body,.042,.008,M.gold,sign*.222,.992,.04);cuff.scale.z=.9;
+   ell(body,sign*.222,.926,.047,.042,.058,.03,M.white);
+   for(let f=0;f<3;f++)line(body,[[sign*.208+f*.009,.933,.074],[sign*.208+f*.009,.903,.072]],.002,u);
+   // Distinct sleeve insignia: one PFC chevron, three sergeant chevrons, officer bars,
+   // and four stars for the general. The pedestal gives the full rank.
+   box(body,.109,.022,.055,M.gold,sign*.152,1.393,0);
+   if(type==='p'){
+    // PFC: single upward chevron; no crossed rifles or rocker.
+    box(body,.009,.105,.112,M.red,sign*.276,1.269,.008);
+    line(body,[[sign*.286,1.239,-.038],[sign*.293,1.285,.008],[sign*.286,1.239,.054]],.011,M.goldLight);
+   }else if(type==='b'){
+    // Captain's paired silver bars on each shoulder, above the red cuff braid.
+    for(const z of [-.029,.029])box(body,.018,.066,.014,M.silver,sign*.283,1.266,z);
+    box(body,.008,.012,.068,M.silver,sign*.295,1.267,0);
+    for(const y of [1.015,1.035])line(body,[[sign*.267,y,-.002],[sign*.274,y,.07]],.006,M.goldLight);
+   }else if(type==='k'){
+    for(let j=0;j<4;j++)star(body,.020,sign*.272,1.29-j*.043,.048,M.silver).rotation.y=sign*Math.PI/2;
+   }
   }
+  // Pockets, nameplate, ribbon racks and suspended miniature medals.
+  for(const x of [-.092,.092]){box(body,.083,.057,.011,u,x,1.197,.111);line(body,[[x-.04,1.222,.121],[x,1.212,.127],[x+.04,1.222,.121]],.004,u)}
   const ribbons=[M.red,M.ribbonBlue,M.gold,M.ribbonGreen,M.white,M.red,M.gold,M.ribbonBlue,M.ribbonGreen];
-  for(let j=0;j<(officer?9:3);j++)box(body,.019,.009,.008,ribbons[j],-.113+(j%3)*.022,1.402-Math.floor(j/3)*.012,female?.133:.113);
-  for(let j=0;j<(officer?3:0);j++){const x=-.108+j*.025;box(body,.015,.024,.006,M.ribbonBlue,x,1.343,.124);ell(body,x,1.322,.129,.012,.015,.004,M.gold)}
-  box(body,.052,.008,.007,M.gold,.083,1.391,female?.14:.112);
-  const head=face(body,skin,1.653,female);head.scale.set(.88,.94,.91);
-  cover(body,1.746);
-  // Rear rank plate follows the jacket, preserving the requested back identification.
-  const rank={p:'PFC',b:'CAPT',q:'COL',k:'4★ GEN'}[type];text(body,rank,.16,.054,0,1.365,-.114,Math.PI);
-  for(const sign of [-1,1])line(body,[[sign*.096,1.445,-.081],[sign*.076,1.30,-.1],[sign*.068,1.205,-.085],[sign*.127,1.04,-.078]],.0018,u);
-  if(type==='q'){
-   for(const sign of [-1,1]){line(body,[[sign*.025,1.459,.139],[sign*.05,1.468,.139],[sign*.08,1.457,.139]],.004,M.silver);ell(body,sign*.05,1.455,.141,.009,.013,.004,M.silver);}
-  }else if(type==='k'){
-   limb(body,[0,.4,.22],[0,1.12,.22],.008,.011,M.silver);limb(body,[0,1.11,.22],[0,1.23,.22],.013,.013,M.gold);
-   line(body,[[-.051,1.13,.22],[-.049,1.23,.22],[0,1.247,.22],[.049,1.23,.22],[.051,1.13,.22]],.006,M.gold);
-   for(let j=0;j<3;j++)line(body,[[.14,1.467,.058],[.192,1.40,.096],[.163,1.29-j*.018,.133],[.055,1.315-j*.018,.138],[.06,1.436,.115]],.0045,M.goldLight);
-  }else rifle(body,type==='b');
-  if(type==='b'){
-   // Draped open cape behind the arms, with fine vertical cloth folds.
-   const pos=[],idx=[],N=36,H=24;
-   for(let j=0;j<=H;j++){const t=j/H,y=1.455-t*.70,r=.175+t*.13;for(let i=0;i<=N;i++){const a=.92+i/N*(Math.PI*2-1.84);const fold=Math.sin(i/N*Math.PI*18)*.011*t;pos.push(Math.sin(a)*(r+fold),y,Math.cos(a)*(r*.69+fold)-.035)}}
-   for(let j=0;j<H;j++)for(let i=0;i<N;i++){const k=j*(N+1)+i;idx.push(k,k+1,k+N+1,k+1,k+N+2,k+N+1)}
-   const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(pos,3));geo.setIndex(idx);geo.computeVertexNormals();const cloth=u.clone();cloth.side=T.DoubleSide;add(body,geo,cloth);
+  for(let j=0;j<(senior?9:6);j++)box(body,.021,.013,.008,ribbons[j],-.127+(j%3)*.025,1.30-Math.floor(j/3)*.016,.119);
+  box(body,.069,.011,.009,M.gold,.095,1.292,.123);
+  for(let i=0;i<(senior?3:1);i++){const x=-.118+i*.031;box(body,.015,.027,.007,M.ribbonBlue,x,1.224,.133);ell(body,x,1.202,.137,.014,.017,.005,M.gold)}
+  const head=face(body,skin,1.607,female);
+  if(female){
+   ell(body,0,1.595,-.135,.10,.115,.055,M.hair);
+   ell(body,0,1.50,-.168,.072,.09,.048,M.hair);
   }
-  const scale=type==='k'?1.12:type==='q'?1.06:type==='b'?1.025:.93;body.scale.y=scale;body.position.y=.37*(1-scale);
+  // A readable raised rank plate sits on the back of the uniform as well as the pedestal.
+  const backRank={p:'PFC',b:'CAPT',k:'4★ GEN'}[type];
+  if(backRank){
+   box(body,.225,.11,.015,M.gold,0,1.255,-.125);
+   box(body,.211,.096,.018,M.navy,0,1.255,-.136);
+   text(body,backRank,.195,.081,0,1.255,-.149,Math.PI);
+  }
+  // Dress covers follow the newly supplied full-length piece photographs.
+  profile(body,[[1.704,.117,.10],[1.719,.146,.129],[1.752,.15,.132],[1.777,.129,.115],[1.786,0,0]],M.white,48);
+   profile(body,[[1.685,.12,.101],[1.718,.124,.105]],M.black,40);
+   const brim=ell(body,0,1.684,.078,.134,.014,.096,M.shoe);
+   line(body,[[-.106,1.702,.047],[0,1.696,.107],[.106,1.702,.047]],.006,M.gold);
+   insignia(body,0,1.742,.131,.15);
+  if(type==='b'){
+   // Ceremonial officer braid follows the captain's tailored coat.
+   for(const sign of [-1,1]){
+    line(body,[[sign*.058,1.388,.086],[sign*.072,1.29,.126],[sign*.079,1.12,.12],[sign*.085,.99,.096]],.012,M.gold);
+    line(body,[[sign*.045,1.382,.09],[sign*.056,1.29,.131],[sign*.063,1.12,.126]],.004,M.goldLight);
+    for(let j=0;j<4;j++)ell(body,sign*.077,1.25-j*.072,.133,.007,.009,.005,M.goldLight);
+   }
+  }
+  if(senior){
+   for(let j=0;j<2;j++)line(body,[[.158,1.373,.086],[.188+j*.007,1.291,.124],[.151,1.173-j*.014,.146],[.078,1.157-j*.014,.143],[.033,1.26,.133],[.032,1.341,.118]],.009,M.gold);
+   for(let j=0;j<3;j++)line(body,[[.15+j*.008,1.365,.085],[.17+j*.008,1.24,.12],[.18+j*.008,1.18,.1]],.005,M.goldLight);
+   // Dress sword and scabbard along the officer's left hip.
+   limb(body,[-.27,.995,.06],[-.30,.43,.10],.019,.011,M.black);
+   limb(body,[-.268,1.10,.055],[-.27,.995,.06],.014,.014,M.gold);
+   line(body,[[-.31,1.01,.06],[-.27,.993,.082],[-.23,1.01,.06]],.009,M.gold);
+   if(type==='k'){for(let j=0;j<4;j++)star(body,.022,-.09+j*.058,1.405,.093);for(let j=0;j<3;j++)ring(body,.019,.004,M.goldLight,.27,1.08+j*.04,.042)}
+  }
+  if(type==='k'){
+   // The four-star general carries a wider gold shoulder braid, sash and medals.
+   for(const sign of [-1,1]){
+    box(body,.13,.026,.078,M.goldLight,sign*.158,1.41,.005);
+    for(let j=0;j<4;j++)star(body,.023,sign*.12+(j-1.5)*.028,1.43,.052,M.silver);
+    for(let j=0;j<4;j++)line(body,[[sign*.21,1.38,.02],[sign*(.22+j*.012),1.28,.10],[sign*(.13+j*.011),1.10,.144]],.005,M.goldLight);
+   }
+   line(body,[[-.16,1.37,.08],[.14,1.04,.17]],.022,M.gold);
+   line(body,[[-.16,1.37,.09],[.14,1.04,.18]],.007,M.goldLight);
+   for(let j=0;j<5;j++)ell(body,-.11+j*.035,1.175,.146,.013,.022,.008,j%2?M.ribbonBlue:M.goldLight);
+   // The supplied general wears the Marine dress cover with four-star detail.
+   for(let j=0;j<4;j++)star(body,.019,(j-1.5)*.046,1.765,.139,M.silver);
+   // The general in the reference rests both gloved hands on a dress sword.
+   // A raised guard, tapered steel blade and pointed tip read from any angle.
+   limb(body,[0,.51,.255],[0,1.002,.255],.014,.019,M.silver);
+   const tip=add(body,new T.ConeGeometry(.019,.11,24),M.silver,0,.46,.255);tip.rotation.z=Math.PI;
+   limb(body,[0,1.01,.255],[0,1.19,.255],.022,.013,M.goldLight);
+   const guard=ring(body,.075,.009,M.goldLight,0,1.075,.255);guard.rotation.x=0;
+   line(body,[[-.085,1.075,.255],[0,1.027,.263],[.085,1.075,.255]],.013,M.gold);
+   ell(body,-.043,1.175,.258,.057,.036,.04,M.white);
+   ell(body,.043,1.16,.27,.057,.036,.04,M.white);
+  }
+  // Fine raised seams, collar braid, cuff studs and polished boot caps.
+  for(const sign of [-1,1]){
+   line(body,[[sign*.175,1.36,.073],[sign*.149,1.287,.109],[sign*.123,1.095,.107]],.003,M.goldLight);
+   ell(body,sign*.222,1.002,.081,.009,.009,.005,M.goldLight);
+   line(body,[[sign*.055,.458,.155],[sign*.094,.449,.167],[sign*.144,.458,.15]],.005,M.gold);
+  }
+  for(const y of [1.398,1.417,1.439])line(body,[[-.055,y,.058],[0,y,.071],[.055,y,.058]],.0025,M.goldLight);
+  // Raised stitching and fastening are visible from all angles at inspection zoom.
+  for(const sign of [-1,1]){
+   for(let j=0;j<7;j++){
+    const y=1.108+j*.039;
+    line(body,[[sign*.125,y,.113],[sign*.144,y+.009,.108]],.002,M.goldLight);
+   }
+   for(let j=0;j<4;j++)ell(body,sign*.232,1.009+j*.017,.073,.004,.004,.003,M.goldLight);
+   line(body,[[sign*.191,1.34,-.06],[sign*.197,1.25,-.077],[sign*.219,1.13,-.045]],.003,M.gold);
+  }
+  if(type==='b'){
+   // Ceremonial long rifle; green leaf finial echoes the Tyrolean feather.
+   const x=-.315,z=.075;
+   limb(body,[x,.61,z],[x,1.72,z],.016,.011,M.black);
+   limb(body,[x,.93,z],[x,1.83,z],.011,.009,M.silver);
+   box(body,.065,.30,.065,M.hair,x,.61,z);
+   box(body,.063,.12,.035,M.gold,x,.91,z);
+   box(body,.045,.055,.042,M.black,x,1.13,z);
+   line(body,[[x,.99,z+.026],[x+.08,1.035,z+.052],[x+.09,1.10,z+.053]],.010,M.goldLight);
+   const leaf=ell(body,x,1.93,z,.025,.105,.012,M.ribbonGreen);
+   leaf.rotation.z=-.22;
+   line(body,[[x,1.84,z+.013],[x,1.98,z+.013]],.003,M.goldLight);
+  }
+  // The bishop's taller hat is balanced by a slightly shorter coat, not an oversized base.
+  const scale=type==='k'?1.10:type==='b'?.98:.95;
+  body.position.y=.38*(1-scale);body.scale.y=scale;
  }
- function queen(g,color){marine(g,'q',color,true)}
+ function queen(g,color){
+  const u=color==='w'?M.ivory:M.navy,skin=color==='w'?M.skinW:M.skinB;
+  const rows=[[.379,0,0],[.38,.35,.317],[.43,.35,.317],[.55,.32,.29],[.70,.28,.26],[.86,.23,.22],[1.03,.165,.16],[1.17,.108,.105],[1.24,.105,.09],[1.33,.18,.13],[1.40,.218,.14],[1.45,.17,.10],[1.48,.06,.048]];
+  profile(g,rows,u,72,.014);
+  // Tailored officer bodice with a distinctly fuller bust and narrow waist.
+  // Uniform fabric covers the contours; piping follows the raised seam.
+  for(const sign of [-1,1]){
+   ell(g,sign*.103,1.344,.128,.119,.115,.123,u);
+   ell(g,sign*.104,1.349,.212,.096,.091,.044,u);
+   line(g,[[sign*.014,1.452,.126],[sign*.104,1.438,.226],[sign*.216,1.37,.146]],.009,M.goldLight);
+   line(g,[[sign*.216,1.324,.154],[sign*.123,1.256,.133],[sign*.025,1.222,.104]],.007,M.gold);
+  }
+  // Gold brocade follows the gown's volume, rather than floating in front of it.
+  for(let j=0;j<14;j++){const a=j*Math.PI*2/14,points=rows.slice(1,10).map(([y,rx,rz])=>[Math.sin(a)*(rx+.005),y,Math.cos(a)*(rz+.005)]);line(g,points,j%2?.0035:.006,M.gold);
+   for(let k=0;k<6;k++){const y=.46+k*.103,r=.326-(y-.43)*.25;const pts=[];for(let t=0;t<=16;t++){const b=t/16*Math.PI*2,aa=a+Math.sin(b)*.038;pts.push([Math.sin(aa)*(r+.005),y+Math.cos(b)*.032,Math.cos(aa)*(r*.93+.006)])}line(g,pts,.003,M.goldLight)}
+  }
+  ring(g,.321,.014,M.gold,0,.401).scale.z=.92;
+  ring(g,.314,.005,M.goldLight,0,.448).scale.z=.92;
+  line(g,[[-.12,1.432,.061],[-.07,1.408,.103],[0,1.398,.112],[.07,1.408,.103],[.12,1.432,.061]],.011,M.gold);
+  for(const sign of [-1,1]){
+   ell(g,sign*.16,1.404,0,.053,.065,.067,u);
+   limb(g,[sign*.174,1.399,0],[sign*.195,1.195,.019],.049,.035,u);
+   limb(g,[sign*.195,1.195,.019],[sign*.177,1.04,.044],.035,.029,u);
+   ell(g,sign*.177,1.01,.044,.03,.052,.027,skin);
+   line(g,[[sign*.18,1.39,.055],[sign*.209,1.2,.052],[sign*.19,1.064,.07]],.005,M.gold);
+  }
+  cyl(g,.047,.052,.093,skin,0,1.507);
+  face(g,skin,1.668,true);
+  // Queen's open coronet with layered circlets, jeweled arches and ruby crest.
+  profile(g,[[1.77,.119,.106],[1.799,.127,.113],[1.813,.13,.117]],M.gold,48);
+  for(const y of [1.792,1.817])ring(g,.129,.009,M.goldLight,0,y).scale.z=.9;
+  for(let j=0;j<9;j++){
+   const a=j*Math.PI*2/9,x=Math.sin(a)*.122,z=Math.cos(a)*.108,high=j===0?1.955:1.89+(j%2)*.035;
+   line(g,[[x,1.808,z],[x*1.14,high-.02,z*1.14],[x*.56,1.835,z*.56]],.011,M.goldLight);
+   ell(g,x*1.14,high,z*1.14,.017,.024,.015,j%2?M.gem:M.goldLight);
+   ell(g,x,1.804,z,.012,.014,.009,j%2?M.goldLight:M.gem);
+  }
+  for(const sign of [-1,1])line(g,[[sign*.12,1.82,.03],[sign*.065,1.93,.035],[0,1.967,0]],.009,M.gold);
+  ell(g,0,1.977,0,.031,.035,.031,M.gem);
+  ell(g,0,1.459,.092,.014,.02,.008,M.gem);
+  // Colonel's raised eagle pin beneath the queen's neckline.
+  line(g,[[-.09,1.405,.11],[-.04,1.434,.13],[0,1.412,.139],[.04,1.434,.13],[.09,1.405,.11]],.011,M.silver);
+  ell(g,0,1.405,.141,.017,.025,.009,M.silver);
+  // A raised full-bird colonel eagle on front and rear, with sculpted
+  // wings, layered feathers, head, beak, tail, and talons. Rank text stays
+  // on the pedestal tag.
+  for(const a of [0,Math.PI]){
+   const eagle=new T.Group();eagle.rotation.y=a;g.add(eagle);
+   box(eagle,.42,.24,.018,M.navy,0,1.035,.235);
+   box(eagle,.40,.22,.008,M.silver,0,1.035,.249);
+   box(eagle,.37,.19,.008,M.navy,0,1.035,.256);
+   ell(eagle,0,1.046,.275,.029,.055,.012,M.silver);
+   for(const sign of [-1,1]){
+    const wing=ell(eagle,sign*.105,1.088,.275,.10,.032,.012,M.silver);wing.rotation.z=sign*.13;
+    for(let f=0;f<5;f++)ell(eagle,sign*(.06+f*.027),1.067-f*.011,.284,.015,.039-f*.004,.006,M.silver);
+   }
+   ell(eagle,.015,1.11,.274,.025,.025,.014,M.silver);
+   const beak=ell(eagle,.046,1.104,.276,.022,.008,.008,M.silver);
+   for(const sign of [-1,1]){
+    line(eagle,[[0,1.075,.278],[sign*.08,1.112,.28],[sign*.18,1.094,.278]],.014,M.silver);
+    for(let j=0;j<4;j++)line(eagle,[[sign*(.052+j*.03),1.108-j*.004,.281],[sign*(.089+j*.029),1.025-j*.014,.281]],.008,M.silver);
+    line(eagle,[[sign*.014,1.015,.28],[sign*.046,.979,.28],[sign*.061,.971,.28]],.007,M.silver);
+   }
+   for(let j=-2;j<=2;j++)line(eagle,[[j*.006,1.014,.279],[j*.018,.967,.279]],.007,M.silver);
+  }
+  // Three concentric embroidered hems, pendant stones and raised filigree.
+  for(const [y,r] of [[.49,.311],[.57,.295],[.86,.23]])ring(g,r,.004,M.goldLight,0,y).scale.z=.94;
+  for(let j=0;j<18;j++){const a=j*Math.PI/9;ell(g,Math.sin(a)*.306,.487,Math.cos(a)*.285,.009,.018,.009,j%3?M.goldLight:M.gem)}
+  for(let j=0;j<12;j++){const a=j*Math.PI/6;ell(g,Math.sin(a)*.27,.70,Math.cos(a)*.25,.008,.014,.008,j%3?M.goldLight:M.gem)}
+  for(let j=0;j<9;j++)ell(g,-.095+j*.024,1.35,.112,.004,.004,.004,j%2?M.gem:M.goldLight);
+  for(const sign of [-1,1])line(g,[[sign*.085,1.36,.104],[sign*.105,1.31,.115],[sign*.07,1.27,.116],[0,1.26,.122]],.005,M.goldLight);
+ }
  function horse(g,color,female=false){
-  const u=color==='w'?M.ivory:M.black;
-  const pants=color==='w'?M.trouserWhite:M.navy;
-  const coat=color==='w'?M.ivory:M.shoe;
+  const horseMaterial=color==='w'?M.ivory:M.black;
+  const u=color==='w'?M.ivory:M.navy;
+  const pants=u;
   // Four articulated legs, a muscular barrel, haunches, chest and a curved neck.
-  ell(g,0,.923,-.018,.197,.22,.325,coat);
-  ell(g,0,.92,-.205,.205,.23,.188,coat);
-  ell(g,0,.969,.176,.18,.24,.16,coat);
+  ell(g,0,.923,-.018,.197,.22,.325,horseMaterial);
+  ell(g,0,.92,-.205,.205,.23,.188,horseMaterial);
+  ell(g,0,.969,.176,.18,.24,.16,horseMaterial);
   for(const sign of [-1,1]){
    const x=sign*.13;
-   limb(g,[x,.91,-.20],[x,.67,-.25],.073,.047,coat);ell(g,x,.66,-.25,.05,.061,.051,coat);
-   limb(g,[x,.65,-.25],[x,.435,-.205],.039,.028,coat);
-   limb(g,[x,.956,.185],[x,.68,.205],.062,.038,coat);ell(g,x,.68,.205,.043,.051,.045,coat);
-   limb(g,[x,.67,.205],[x,.433,.24],.033,.029,coat);
-   for(const z of [-.2,.245]){ell(g,x,.407,z,.052,.038,.073,M.shoe);ell(g,x,.447,z-.006,.037,.036,.048,coat)}
+   limb(g,[x,.91,-.20],[x,.67,-.25],.073,.047,horseMaterial);ell(g,x,.66,-.25,.05,.061,.051,horseMaterial);
+   limb(g,[x,.65,-.25],[x,.435,-.205],.039,.028,horseMaterial);
+   limb(g,[x,.956,.185],[x,.68,.205],.062,.038,horseMaterial);ell(g,x,.68,.205,.043,.051,.045,horseMaterial);
+   limb(g,[x,.67,.205],[x,.433,.24],.033,.029,horseMaterial);
+   for(const z of [-.2,.245]){ell(g,x,.407,z,.052,.038,.073,M.gold);ell(g,x,.447,z-.006,.037,.036,.048,horseMaterial)}
   }
-  const neck=profile(g,[[.98,.154,.147,.18],[1.12,.141,.16,.17],[1.27,.112,.141,.14],[1.41,.085,.112,.12],[1.51,.07,.084,.16]],coat,40);
-  const head=ell(g,0,1.519,.218,.099,.15,.141,coat);head.rotation.x=-.48;
-  ell(g,0,1.431,.368,.083,.067,.118,coat);
-  ell(g,0,1.4,.401,.076,.043,.072,coat);
+  const neck=profile(g,[[.98,.154,.147,.18],[1.12,.141,.16,.17],[1.27,.112,.141,.14],[1.41,.085,.112,.12],[1.51,.07,.084,.16]],horseMaterial,40);
+  const head=ell(g,0,1.519,.218,.099,.15,.141,horseMaterial);head.rotation.x=-.48;
+  ell(g,0,1.431,.368,.083,.067,.118,horseMaterial);
+  ell(g,0,1.4,.401,.076,.043,.072,horseMaterial);
   for(const sign of [-1,1]){
    ell(g,sign*.056,1.448,.422,.009,.016,.02,M.black);
    ell(g,sign*.092,1.54,.285,.012,.021,.028,M.gold);ell(g,sign*.103,1.54,.29,.008,.012,.013,M.black);
-   const ear=ell(g,sign*.065,1.689,.148,.03,.091,.038,coat);ear.rotation.z=-sign*.19;ell(g,sign*.065,1.69,.174,.014,.056,.011,M.gold);
+   const ear=ell(g,sign*.065,1.689,.148,.03,.091,.038,horseMaterial);ear.rotation.z=-sign*.19;ell(g,sign*.065,1.69,.174,.014,.056,.011,M.gold);
    line(g,[[sign*.082,1.44,.4],[sign*.092,1.50,.30],[sign*.075,1.617,.15]],.009,M.gold);
    line(g,[[sign*.086,1.45,.39],[sign*.18,1.23,.17],[sign*.17,1.03,-.08]],.007,M.gold);
   }
@@ -214,8 +343,8 @@ export function makeWorkshop(environment) {
    ell(g,sign*.092,1.465,.389,.017,.017,.008,M.goldLight);
   }
   // Individually curved mane locks and flowing tail.
-  for(let j=0;j<13;j++){const y=1.60-j*.037,z=.103-(1.60-y)*.27;line(g,[[0,y,z],[.036,y-.045,z-.04],[.02,y-.083,z-.054]],.022,coat)}
-  for(let j=0;j<5;j++){const x=(j-2)*.019;line(g,[[x,.96,-.31],[x+.025,.77,-.386],[x+.052,.54,-.33],[x+.042,.42,-.29]],.017,coat)}
+  for(let j=0;j<13;j++){const y=1.60-j*.037,z=.103-(1.60-y)*.27;line(g,[[0,y,z],[.036,y-.045,z-.04],[.02,y-.083,z-.054]],.022,horseMaterial)}
+  for(let j=0;j<5;j++){const x=(j-2)*.019;line(g,[[x,.96,-.31],[x+.025,.77,-.386],[x+.052,.54,-.33],[x+.042,.42,-.29]],.017,horseMaterial)}
   const blanket=ell(g,0,1.065,-.06,.208,.044,.208,u);
   line(g,[[-.202,1.039,.05],[-.198,1.037,-.20],[0,1.10,-.24],[.198,1.037,-.20],[.202,1.039,.05]],.009,M.gold);
   ell(g,0,1.10,-.065,.116,.039,.132,M.gold);
@@ -240,16 +369,18 @@ export function makeWorkshop(environment) {
   cyl(g,.055,.055,.05,skin,0,1.63,-.10,24);
   const riderFace=face(g,skin,1.78,female);
   riderFace.position.z=-.10;
-  cover(g,1.875,-.10);
+  const riderCap=profile(g,[[1.875,.10,.085,-.10],[1.89,.13,.11,-.10],[1.925,.135,.11,-.10],[1.95,.10,.083,-.10],[1.965,0,0,-.10]],u,36);
+  ell(g,0,1.875,.015,.13,.013,.085,M.black);
+  line(g,[[-.08,1.91,-.01],[0,1.91,.025],[.08,1.91,-.01]],.006,M.goldLight);
+  insignia(g,0,1.933,.015,.12);
+   box(g,.018,.065,.012,M.silver,0,1.927,.035);
   box(g,.17,.09,.018,M.navy,0,1.44,.005);
-  text(g,'1ST LT',.15,.06,0,1.44,-.208,Math.PI);
-  for(let j=0;j<4;j++)ell(g,0,1.33+j*.057,.008,.008,.008,.005,M.goldLight);
-  for(let j=0;j<6;j++)box(g,.018,.01,.009,[M.red,M.gold,M.ribbonBlue][j%3],-.105+j%3*.023,1.54-Math.floor(j/3)*.014,.01);
+  text(g,'1ST LT',.15,.075,0,1.44,.017);
   for(const sign of [-1,1])line(g,[[sign*.13,1.22,.16],[sign*.04,1.18,.33],[sign*.085,1.46,.38]],.006,M.gold);
   for(const sign of [-1,1])for(let j=0;j<5;j++)ell(g,sign*.188,1.04-j*.025,-.19,.004,.004,.004,M.goldLight);
  }
  function tank(g,color){
-  const armor=color==='w'?material('#b69a70',.22,.52):material('#464b35',.3,.5),shadow=M.black,trim=color==='w'?material('#a88a60',.25,.5):material('#62694d',.3,.48);
+  const armor=color==='w'?M.sand:M.olive,shadow=color==='w'?M.silver:M.black,trim=color==='w'?M.gold:M.goldLight;
   // Compact armored rook, with a low silhouette and a clear tank profile.
   for(const sign of [-1,1]){
    const x=sign*.285;
@@ -258,7 +389,7 @@ export function makeWorkshop(environment) {
    box(g,.175,.035,.73,shadow,x,.397,0);
    for(let j=0;j<6;j++){
     const z=-.29+j*.116;
-    ell(g,sign*.375,.54,z,.018,.059,.059,armor);
+    ell(g,sign*.375,.54,z,.018,.059,.059,M.gold);
     ell(g,sign*.389,.54,z,.008,.032,.032,M.black);
     ell(g,sign*.398,.54,z,.004,.012,.012,M.goldLight);
    }
@@ -306,13 +437,6 @@ export function makeWorkshop(environment) {
   const muzzle=cyl(g,.059,.059,.042,M.goldLight,0,.932,.488,24);muzzle.rotation.x=Math.PI/2;
   const bore=cyl(g,.033,.033,.044,M.black,0,.932,.51,24);bore.rotation.x=Math.PI/2;
   insignia(g,0,.638,.407,.24);
-  for(const sign of [-1,1]){
-   limb(g,[sign*.16,1.02,-.20],[sign*.16,1.63,-.22],.003,.0018,shadow);
-   for(let j=0;j<4;j++)box(g,.027,.10,.12,armor,sign*.28,.76,-.23+j*.145);
-  }
-  box(g,.13,.105,.15,armor,.085,1.10,-.08);
-  limb(g,[.085,1.12,-.01],[.085,1.12,.22],.012,.008,shadow);
-  text(g,'1775',.17,.065,0,.705,.407);
   // Marine Master Sergeant: three upright chevrons, crossed rifles, three rockers.
   for(const sign of [-1,1]){
    const plate=new T.Group();plate.rotation.y=sign*Math.PI/2;g.add(plate);
@@ -329,6 +453,48 @@ export function makeWorkshop(environment) {
    }
   }
  }
- function piece(type,color,female=false){const raw=new T.Group();base(raw,type,color);if(type==='r'){const raised=new T.Group();raw.add(raised);tank(raised,color);raised.scale.y=1.13;raised.position.y=-.365*.13;}else if(type==='n')horse(raw,color,female);else if(type==='q')queen(raw,color);else marine(raw,type,color,female);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,female,sculpture:true};return out}
+ // The approved queen wears a fitted jacket and trousers, not the old gown.
+ // Keep the front and rear silhouettes continuous so the inspection camera
+ // reveals the same figure and the rank plaque on the back of the pedestal.
+ function queenReference(g,color){
+  const u=color==='w'?M.ivory:M.navy,skin=color==='w'?M.skinW:M.skinB;
+  for(const sign of [-1,1]){
+   const x=sign*.125;
+   ell(g,x,.414,.038,.073,.045,.122,M.shoe);
+   const leg=profile(g,[[.445,.063,.069],[.67,.069,.073],[.86,.093,.102],[.99,.108,.115],[1.025,.097,.101]],u,64);leg.position.x=x;
+   line(g,[[x+sign*.066,.46,.012],[x+sign*.073,.71,.012],[x+sign*.092,.98,.005]],.009,color==='w'?M.red:M.red);
+  }
+  profile(g,[[.91,.215,.145],[.98,.238,.157],[1.07,.165,.118],[1.15,.126,.098],[1.26,.156,.114],[1.355,.196,.139],[1.415,.174,.115],[1.45,.079,.06]],u,72);
+  for(const sign of [-1,1]){
+   ell(g,sign*.108,1.319,.129,.091,.096,.077,u);
+   ell(g,sign*.19,1.365,0,.058,.067,.069,u);
+   limb(g,[sign*.201,1.361,0],[sign*.243,1.188,.046],.051,.039,u);
+   limb(g,[sign*.243,1.188,.046],[sign*.178,1.079,.112],.039,.031,u);
+   ell(g,sign*.166,1.075,.125,.034,.041,.033,M.white);
+   line(g,[[sign*.195,1.393,.097],[sign*.146,1.307,.176],[sign*.072,1.145,.122]],.006,M.goldLight);
+   // Sculpted shoulder epaulets and a continuous breast seam add relief to
+   // the tailored coat without changing the photographic silhouette.
+   ell(g,sign*.173,1.416,.015,.062,.017,.068,M.gold);
+   line(g,[[sign*.052,1.392,.163],[sign*.11,1.305,.204],[sign*.169,1.272,.134]],.004,M.goldLight);
+  }
+  profile(g,[[1.055,.132,.102],[1.081,.132,.102]],M.black,48);
+  box(g,.055,.043,.024,M.goldLight,0,1.069,.113);
+  for(let i=0;i<5;i++)ell(g,0,1.135+i*.061,.132,.009,.009,.005,M.goldLight);
+  for(let i=0;i<9;i++)box(g,.019,.012,.008,[M.red,M.ribbonBlue,M.gold][i%3],-.132+(i%3)*.023,1.365-Math.floor(i/3)*.015,.126);
+  for(const sign of [-1,1]){
+   line(g,[[sign*.194,1.03,.09],[sign*.16,.86,.108],[sign*.15,.65,.08]],.003,M.goldLight);
+   for(let j=0;j<3;j++)ell(g,sign*.17,1.422,.025+(j-1)*.027,.006,.006,.006,M.goldLight);
+  }
+  cyl(g,.055,.053,.065,skin,0,1.474,0,32);
+  face(g,skin,1.633,true);
+  // Flat white dress cover, black band and gold Marine emblem match both views.
+  profile(g,[[1.727,.105,.092],[1.744,.153,.137],[1.77,.155,.139],[1.783,.124,.114],[1.793,.10,.09]],M.white,64);
+  profile(g,[[1.718,.125,.104],[1.745,.129,.108]],M.black,48);
+  ell(g,0,1.72,.079,.133,.012,.094,M.shoe);
+  insignia(g,0,1.759,.142,.14);
+  // Full bird Colonel rank, also visible from behind the uniform.
+  for(const a of [0,Math.PI]){const mark=new T.Group();mark.rotation.y=a;g.add(mark);line(mark,[[-.06,1.374,.15],[-.025,1.401,.155],[0,1.381,.157],[.025,1.401,.155],[.06,1.374,.15]],.008,M.silver);ell(mark,0,1.377,.157,.01,.016,.007,M.silver)}
+ }
+ function piece(type,color,female=false){const raw=new T.Group();base(raw,type);if(type==='r'){const raised=new T.Group();raw.add(raised);tank(raised,color);raised.scale.y=1.8;raised.position.y=-.365*.8;}else if(type==='n')horse(raw,color,female);else if(type==='q')queenReference(raw,color);else marine(raw,type,color,female);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,female,sculpture:true};return out}
  return {M,material,add,ell,box,cyl,ring,line,profile,star,text,insignia,bake,piece};
 }

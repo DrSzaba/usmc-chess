@@ -2,7 +2,7 @@ import * as T from 'three';
 import { OrbitControls } from '../../vendor/OrbitControls.js';
 import { RoomEnvironment } from '../../vendor/RoomEnvironment.js';
 import { Reflector } from '../../vendor/Reflector.js';
-import { makeWorkshop } from './sculptures.js?v=reference-sculpt-31';
+import { makeWorkshop } from './sculptures.js?v=reference-32';
 
 const CELL=1.15;
 const coords=s=>[(s.charCodeAt(0)-97-3.5)*CELL,(8-Number(s[1])-3.5)*CELL];
@@ -103,7 +103,11 @@ export async function createPresentation(api){
  const floor=add(scene,new T.PlaneGeometry(160,160),material('#d9d7d2',0,.78),0,-1.023);floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;
  const pieceGroup=new T.Group();scene.add(pieceGroup);const prototypes={};
  for(const color of ['w','b'])for(const type of ['p','n','b','r','q','k'])prototypes[color+type]=W.piece(type,color);
- for(const color of ['w','b']){prototypes[color+'pf']=W.piece('p',color,true);prototypes[color+'nf']=W.piece('n',color,true);}
+ for(const color of ['w','b']){
+  prototypes[color+'pf']=W.piece('p',color,true);
+  prototypes[color+'nf']=W.piece('n',color,true);
+  prototypes[color+'bf']=W.piece('b',color,true);
+ }
  const marks=new T.Group();scene.add(marks);const markerGeos=[];
  const ray=new T.Raycaster(),pointer=new T.Vector2();let down=null,auto=false,transition=null,lastFen='',currentPieces=new Map();
  function cameraTo(pos,target){transition={from:camera.position.clone(),to:new T.Vector3(...pos),start:controls.target.clone(),target:new T.Vector3(...target),time:performance.now()};auto=false;document.getElementById('showcase').setAttribute('aria-pressed','false')}
@@ -118,7 +122,7 @@ export async function createPresentation(api){
     if(!item&&last?.to===s){const candidate=old.get(last.from);if(candidate?.key?.slice(0,2)===p.color+p.type)item=candidate}
     if(item&&used.has(item))item=null;
     // Four of each side's original eight pawns are women. Their identity follows moves.
-    const key=item?.key||(p.color+p.type+((p.type==='p'&&c%2===0)||(p.type==='n'&&c===6)?'f':''));
+    const key=item?.key||(p.color+p.type+((p.type==='p'&&c%2===0)||(p.type==='n'&&c===6)||(p.type==='b'&&c===5)?'f':''));
     if(!item){const model=prototypes[key].clone(true);pieceGroup.add(model);item={model,key};item.model.position.set((c-3.5)*CELL,.151,(r-3.5)*CELL)}
     const target=new T.Vector3((c-3.5)*CELL,.151,(r-3.5)*CELL);
     if(item.model.position.distanceTo(target)>.01)item.motion={from:item.model.position.clone(),target,time:now};
