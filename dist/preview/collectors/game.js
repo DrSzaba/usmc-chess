@@ -298,7 +298,7 @@ let has3D=false;
  $('flip').onclick=()=>{flipped=!flipped;cameraReset();render()};$('reset-view').onclick=()=>cameraReset();
 render();
 try {
- const { createPresentation } = await import('./presentation.js?v=reference-32');
+ const { createPresentation } = await import('./presentation.js?v=square-tank-review-2');
  const view3D = await createPresentation({ stage: $('stage'), host: $('canvas'), game, choose, legal, selection:()=>selected, isFlat:()=>flat, isFlipped:()=>flipped, ranks, rankMarks });
  redraw3D=view3D.redraw; cameraReset=view3D.reset;apply3DBoard=view3D.setBoardStyle;apply3DBoard(boardStyle.value);
  for (const [id,fn] of Object.entries({'showcase':view3D.showcase,'overhead':view3D.overhead,'zoom-in':()=>view3D.zoom(.82),'zoom-out':()=>view3D.zoom(1.22),'inspect':()=>view3D.inspect(selected)})) $(id).onclick=fn;
