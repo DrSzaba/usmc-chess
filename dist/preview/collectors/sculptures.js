@@ -133,10 +133,11 @@ export function makeWorkshop(environment) {
    ell(body,sign*.188,1.335,0,.07,.081,.082,u);
    limb(body,[sign*.204,1.335,0],[sign*.235,1.13,.012],.065,.048,u);
    ell(body,sign*.235,1.126,.012,.049,.044,.049,u);
-   limb(body,[sign*.235,1.13,.012],[sign*.221,.972,.041],.048,.039,u);
-   const cuff=ring(body,.042,.008,M.gold,sign*.222,.992,.04);cuff.scale.z=.9;
-   ell(body,sign*.222,.926,.047,.042,.058,.03,M.white);
-   for(let f=0;f<3;f++)line(body,[[sign*.208+f*.009,.933,.074],[sign*.208+f*.009,.903,.072]],.002,u);
+   const handX=type==='p'?sign*.047:sign*.221,handY=type==='p'?1.015:.972,handZ=type==='p'?.235:.041;
+   limb(body,[sign*.235,1.13,.012],[handX,handY,handZ],.048,.039,u);
+   const cuff=ring(body,.042,.008,M.gold,handX,handY,handZ);cuff.scale.z=.9;
+   ell(body,handX,handY-.046,handZ+.007,.042,.052,.03,M.white);
+   for(let f=0;f<3;f++)line(body,[[handX-sign*.012+f*.009,handY-.04,handZ+.034],[handX-sign*.012+f*.009,handY-.068,handZ+.032]],.002,u);
    // Distinct sleeve insignia: one PFC chevron, three sergeant chevrons, officer bars,
    // and four stars for the general. The pedestal gives the full rank.
    box(body,.109,.022,.055,M.gold,sign*.152,1.393,0);
@@ -152,6 +153,19 @@ export function makeWorkshop(environment) {
    }else if(type==='k'){
     for(let j=0;j<4;j++)star(body,.020,sign*.272,1.29-j*.043,.048,M.silver).rotation.y=sign*Math.PI/2;
    }
+  }
+  if(type==='p'){
+   // Both PFCs stand at parade rest with gloved hands around one grounded rifle.
+   const z=.245;
+   box(body,.076,.37,.075,M.hair,0,.597,z);
+   box(body,.091,.03,.085,M.black,0,.417,z);
+   limb(body,[0,.76,z],[0,1.143,z],.015,.012,M.black);
+   limb(body,[0,.79,z],[0,.975,z],.021,.018,M.silver);
+   for(const y of [.785,.86,.965])ring(body,.024,.004,M.goldLight,0,y,z);
+   box(body,.075,.085,.025,M.black,0,.877,z+.037);
+   const guard=ring(body,.045,.007,M.black,0,.812,z+.044);guard.rotation.x=0;
+   box(body,.013,.035,.016,M.goldLight,0,1.15,z);
+   line(body,[[-.025,.74,z+.043],[0,.69,z+.054],[.025,.74,z+.043]],.004,M.goldLight);
   }
   // Pockets, nameplate, ribbon racks and suspended miniature medals.
   for(const x of [-.092,.092]){box(body,.083,.057,.011,u,x,1.197,.111);line(body,[[x-.04,1.222,.121],[x,1.212,.127],[x+.04,1.222,.121]],.004,u)}
@@ -530,9 +544,10 @@ export function makeWorkshop(environment) {
   for(const sign of [-1,1]){
    ell(g,sign*.108,1.319,.129,.091,.096,.077,u);
    ell(g,sign*.19,1.365,0,.058,.067,.069,u);
-   limb(g,[sign*.201,1.361,0],[sign*.243,1.188,.046],.051,.039,u);
-   limb(g,[sign*.243,1.188,.046],[sign*.178,1.079,.112],.039,.031,u);
-   ell(g,sign*.166,1.075,.125,.034,.041,.033,M.white);
+   limb(g,[sign*.201,1.361,0],[sign*.304,1.204,.012],.051,.039,u);
+   limb(g,[sign*.304,1.204,.012],[sign*.194,1.075,.112],.039,.031,u);
+   ell(g,sign*.194,1.075,.132,.044,.035,.031,M.white);
+   for(let f=0;f<3;f++)line(g,[[sign*(.174+f*.012),1.083,.159],[sign*(.174+f*.012),1.061,.156]],.0025,M.goldLight);
    line(g,[[sign*.195,1.393,.097],[sign*.146,1.307,.176],[sign*.072,1.145,.122]],.006,M.goldLight);
    // Sculpted shoulder epaulets and a continuous breast seam add relief to
    // the tailored coat without changing the photographic silhouette.
