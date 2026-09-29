@@ -43,22 +43,34 @@ export function makeWorkshop(environment) {
   group.traverse(o=>{if(!o.isMesh)return;if(o.material.transparent){const c=o.clone();c.applyMatrix4(o.parent.matrixWorld);labels.push(c);return}const geo=o.geometry.clone().applyMatrix4(o.matrixWorld);const plain=geo.index?geo.toNonIndexed():geo;for(const key of Object.keys(plain.attributes))if(!['position','normal','uv'].includes(key))plain.deleteAttribute(key);if(!plain.attributes.uv)plain.setAttribute('uv',new T.BufferAttribute(new Float32Array(plain.attributes.position.count*2),2));if(!byMaterial.has(o.material))byMaterial.set(o.material,[]);byMaterial.get(o.material).push(plain)});
   const out=new T.Group();for(const [m,list] of byMaterial){const geo=mergeGeometries(list,false);if(!geo)throw Error('Could not merge sculpture geometry');const o=new T.Mesh(geo,m);o.castShadow=true;o.receiveShadow=true;out.add(o);for(const g of list)g.dispose()}for(const o of labels)out.add(o);return out;
  }
- function base(g,type){
-  profile(g,[[0,0,0],[0,.405,.405],[.035,.435,.435],[.065,.435,.435],[.083,.4,.4],[.11,.4,.4],[.135,.38,.38],[.27,.38,.38],[.29,.41,.41],[.315,.41,.41],[.34,.36,.36],[.365,.36,.36],[.365,0,0]],M.navy,64);
+ function base(g,type,color){
+  const stone=color==='w'?M.ivory:M.navy;
+  if(type==='r'){
+   // The armored rook sits on a broad square plinth that supports both tracks.
+   for(const [size,height,y,mat] of [[.92,.035,.018,M.goldLight],[.88,.038,.054,M.black],[.86,.205,.175,stone],[.90,.026,.291,M.gold],[.84,.057,.333,stone],[.80,.019,.371,M.goldLight],[.78,.014,.388,stone]])box(g,size,height,size,mat,0,y,0);
+   for(const sign of [-1,1])for(const v of [-.28,.28]){
+    box(g,.012,.105,.012,M.gold,sign*.434,.176,v);
+    box(g,.012,.105,.012,M.gold,v,.176,sign*.434);
+   }
+  }else{
+  profile(g,[[0,0,0],[0,.405,.405],[.035,.435,.435],[.065,.435,.435],[.083,.4,.4],[.11,.4,.4],[.135,.38,.38],[.27,.38,.38],[.29,.41,.41],[.315,.41,.41],[.34,.36,.36],[.365,.36,.36],[.365,0,0]],stone,64);
   for(const [y,r,t] of [[.035,.429,.012],[.08,.411,.015],[.127,.386,.009],[.278,.397,.013],[.312,.405,.014],[.352,.356,.011]])ring(g,r,t,M.goldLight,0,y);
   cyl(g,.352,.352,.025,M.ivory,0,.365);
   for(let i=0;i<10;i++){const a=i*Math.PI/5,s=star(g,.037,Math.sin(a)*.384,.207,Math.cos(a)*.384);s.rotation.y=a}
   for(let j=0;j<20;j++){const a=j*Math.PI/10;ell(g,Math.sin(a)*.418,.302,Math.cos(a)*.418,.008,.008,.008,M.goldLight)}
   for(let j=0;j<32;j++){const a=j*Math.PI/16;ell(g,Math.sin(a)*.382,.134,Math.cos(a)*.382,.006,.009,.006,j%4?M.gold:M.red)}
   ring(g,.347,.004,M.goldLight,0,.368);
+  }
   const rank={p:'PFC',n:'1ST LT',r:'MASTER SGT',b:'CAPTAIN',q:'COLONEL',k:'4-STAR GEN'}[type];
-  // Large raised plaques on both sides, mounted beyond the curved pedestal.
+  // Front emblem and rear rank remain readable when a player rotates the piece.
   for(const a of [0,Math.PI]){
    const plaque=new T.Group();plaque.rotation.y=a;g.add(plaque);
-   box(plaque,.74,.20,.028,M.black,0,.21,.414);
-   box(plaque,.70,.17,.008,M.gold,0,.21,.432);
-   box(plaque,.66,.145,.008,M.navy,0,.21,.439);
-   text(plaque,rank,.63,.132,0,.21,.452);
+   const face=type==='r'?.46:.414;
+   box(plaque,.74,.20,.028,M.black,0,.21,face);
+   box(plaque,.70,.17,.008,M.gold,0,.21,face+.018);
+   box(plaque,.66,.145,.008,M.navy,0,.21,face+.025);
+   if(a===0)insignia(plaque,0,.205,face+.048,.42);
+   else text(plaque,rank,.63,.132,0,.21,face+.038);
   }
  }
  function face(g,skin,y,female=false){
@@ -495,6 +507,6 @@ export function makeWorkshop(environment) {
   // Full bird Colonel rank, also visible from behind the uniform.
   for(const a of [0,Math.PI]){const mark=new T.Group();mark.rotation.y=a;g.add(mark);line(mark,[[-.06,1.374,.15],[-.025,1.401,.155],[0,1.381,.157],[.025,1.401,.155],[.06,1.374,.15]],.008,M.silver);ell(mark,0,1.377,.157,.01,.016,.007,M.silver)}
  }
- function piece(type,color,female=false){const raw=new T.Group();base(raw,type);if(type==='r'){const raised=new T.Group();raw.add(raised);tank(raised,color);raised.scale.y=1.8;raised.position.y=-.365*.8;}else if(type==='n')horse(raw,color,female);else if(type==='q')queenReference(raw,color);else marine(raw,type,color,female);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,female,sculpture:true};return out}
+ function piece(type,color,female=false){const raw=new T.Group();base(raw,type,color);if(type==='r'){const raised=new T.Group();raw.add(raised);tank(raised,color);raised.scale.y=1.8;raised.position.y=-.365*.8;}else if(type==='n')horse(raw,color,female);else if(type==='q')queenReference(raw,color);else marine(raw,type,color,female);const out=bake(raw);if(color==='w')out.rotation.y=Math.PI;out.userData={type,color,female,sculpture:true};return out}
  return {M,material,add,ell,box,cyl,ring,line,profile,star,text,insignia,bake,piece};
 }
