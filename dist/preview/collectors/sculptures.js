@@ -184,6 +184,24 @@ export function makeWorkshop(environment) {
     line(body,[[sign*.045,1.382,.09],[sign*.056,1.29,.131],[sign*.063,1.12,.126]],.004,M.goldLight);
     for(let j=0;j<4;j++)ell(body,sign*.077,1.25-j*.072,.133,.007,.009,.005,M.goldLight);
    }
+   if(!female){
+    // The male Captain reference has a draped shoulder cape, open at the front.
+    const capeMaterial=u.clone();capeMaterial.side=T.DoubleSide;capeMaterial.roughness=.54;
+    const vertices=[],indices=[];
+    for(let row=0;row<6;row++){
+     const t=row/5,y=1.405-t*.75,width=.19+t*.19;
+     for(let col=0;col<13;col++){
+      const a=Math.PI*.12+(col/12)*Math.PI*.76;
+      const fold=Math.sin(col*Math.PI*5/12)*(.004+t*.018);
+      vertices.push(Math.cos(a)*width,y+fold,-.065-Math.sin(a)*(.10+t*.16));
+     }
+    }
+    for(let row=0;row<5;row++)for(let col=0;col<12;col++){
+     const i=row*13+col;indices.push(i,i+13,i+1,i+1,i+13,i+14);
+    }
+    const cloth=new T.BufferGeometry();cloth.setAttribute('position',new T.Float32BufferAttribute(vertices,3));cloth.setIndex(indices);cloth.computeVertexNormals();add(body,cloth,capeMaterial);
+    for(const sign of [-1,1])line(body,[[sign*.17,1.40,-.09],[sign*.29,1.02,-.16],[sign*.36,.67,-.19]],.006,M.goldLight);
+   }
   }
   if(senior){
    for(let j=0;j<2;j++)line(body,[[.158,1.373,.086],[.188+j*.007,1.291,.124],[.151,1.173-j*.014,.146],[.078,1.157-j*.014,.143],[.033,1.26,.133],[.032,1.341,.118]],.009,M.gold);
