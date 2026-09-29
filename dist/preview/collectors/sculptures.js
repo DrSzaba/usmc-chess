@@ -366,8 +366,11 @@ export function makeWorkshop(environment) {
    limb(g,[x,.91,-.20],[x,.67,-.25],.073,.047,horseMaterial);ell(g,x,.66,-.25,.05,.061,.051,horseMaterial);
    limb(g,[x,.65,-.25],[x,.435,-.205],.039,.028,horseMaterial);
    limb(g,[x,.956,.185],[x,.68,.205],.062,.038,horseMaterial);ell(g,x,.68,.205,.043,.051,.045,horseMaterial);
-   limb(g,[x,.67,.205],[x,.433,.24],.033,.029,horseMaterial);
-   for(const z of [-.2,.245]){ell(g,x,.407,z,.052,.038,.073,M.gold);ell(g,x,.447,z-.006,.037,.036,.048,horseMaterial)}
+   const lifted=sign<0,frontHoofY=lifted?.556:.407,frontHoofZ=lifted?.362:.245;
+   limb(g,[x,.67,.205],[x,frontHoofY+.033,frontHoofZ],.033,.029,horseMaterial);
+   ell(g,x,.407,-.2,.052,.038,.073,M.gold);ell(g,x,.447,-.206,.037,.036,.048,horseMaterial);
+   const hoof=ell(g,x,frontHoofY,frontHoofZ,.052,.038,.073,M.gold);hoof.rotation.x=lifted?-.34:0;
+   ell(g,x,frontHoofY+.04,frontHoofZ-.007,.037,.036,.048,horseMaterial);
   }
   const neck=profile(g,[[.98,.154,.147,.18],[1.12,.141,.16,.17],[1.27,.112,.141,.14],[1.41,.085,.112,.12],[1.51,.07,.084,.16]],horseMaterial,40);
   const head=ell(g,0,1.519,.218,.099,.15,.141,horseMaterial);head.rotation.x=-.48;
